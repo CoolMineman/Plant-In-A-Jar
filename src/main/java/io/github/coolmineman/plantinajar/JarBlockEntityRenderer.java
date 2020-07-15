@@ -21,14 +21,14 @@ public class JarBlockEntityRenderer extends BlockEntityRenderer<JarBlockEntity> 
         matrices.translate(0d, 1d/32d, 0d);
         matrices.scale(0.999f, 1f/32f, 0.999f);
         matrices.translate(0.0005f, 0f, 0.0005f);
-        MinecraftClient.getInstance().getBlockRenderManager().renderBlockAsEntity(Blocks.FARMLAND.getDefaultState().with(FarmlandBlock.MOISTURE, 7), matrices, vertexConsumers, light, overlay);
+        MinecraftClient.getInstance().getBlockRenderManager().renderBlockAsEntity(entity.getBase(), matrices, vertexConsumers, light, overlay);
         matrices.pop();
 
         matrices.push();
         matrices.translate(0d, 1d/16d, 0d);
         matrices.scale(0.999f, 0.999f, 0.999f);
         matrices.translate(0.0005f, 0.0005f, 0.0005f);
-        MinecraftClient.getInstance().getBlockRenderManager().renderBlockAsEntity(Blocks.CARROTS.getDefaultState().with(CropBlock.AGE, entity.tickyes / 20), matrices, vertexConsumers, light, overlay);
+        MinecraftClient.getInstance().getBlockRenderManager().renderBlockAsEntity(entity.getPlant(), matrices, vertexConsumers, light, overlay);
         matrices.pop();
     }
 
