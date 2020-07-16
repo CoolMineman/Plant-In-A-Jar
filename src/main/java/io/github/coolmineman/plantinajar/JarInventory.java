@@ -39,4 +39,5 @@ public class JarInventory extends SimpleInventory implements SidedInventory {
     public boolean canExtract(int slot, ItemStack stack, Direction dir) {
         return false;
     }
+    
 }
