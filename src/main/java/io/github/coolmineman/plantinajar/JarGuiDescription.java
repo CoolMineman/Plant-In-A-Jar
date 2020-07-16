@@ -19,9 +19,9 @@ public class JarGuiDescription extends SyncedGuiDescription {
 
         WGridPanel root = new WGridPanel();
         setRootPanel(root);
-        WItemSlot itemSlot = WItemSlot.of(blockInventory, 0);
+        WItemSlot itemSlot = WItemSlotHack.of1(blockInventory, 0);
         root.add(itemSlot, 4, 1);
-        WItemSlot itemSlot2 = WItemSlot.of(blockInventory, 1);
+        WItemSlot itemSlot2 = WItemSlotHack.of1(blockInventory, 1);
         root.add(itemSlot2, 4, 2);
 
         root.add(this.createPlayerInventoryPanel(), 0, 3);

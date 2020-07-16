@@ -7,6 +7,7 @@ import net.minecraft.block.Blocks;
 import net.minecraft.block.CropBlock;
 import net.minecraft.block.FarmlandBlock;
 import net.minecraft.block.InventoryProvider;
+import net.minecraft.block.SaplingBlock;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.PlayerInventory;
@@ -60,13 +61,13 @@ public class JarBlockEntity extends BlockEntity implements Tickable, NamedScreen
                     }
                     hasOutputed = true;
                 }
-                if (output.isEmpty() && tickyes >= GROWTH_TIME) {
+                if (!world.isClient && output.isEmpty() && tickyes >= GROWTH_TIME) {
                     hasOutputed = false;
                     tickyes = 0;
+                    sync();
                 }
             }
         }
-        
     }
 
     public BlockState getBase() {
@@ -94,6 +95,8 @@ public class JarBlockEntity extends BlockEntity implements Tickable, NamedScreen
                 System.out.println("Epic Hacky Code Failed Scream At ThatTrollzer in the Fabric Discord If You See This");
                 e.printStackTrace();
             }
+        } else if (plant.getBlock() instanceof SaplingBlock) {
+            return true;
         }
 
         return false;
@@ -168,6 +171,10 @@ public class JarBlockEntity extends BlockEntity implements Tickable, NamedScreen
     @Override
     public CompoundTag toClientTag(CompoundTag tag) {
         return toTag(tag);
+    }
+
+    public int getTickyes() {
+        return tickyes;
     }
     
 }
