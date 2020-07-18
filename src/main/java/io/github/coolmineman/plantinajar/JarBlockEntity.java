@@ -2,12 +2,19 @@ package io.github.coolmineman.plantinajar;
 
 import io.github.coolmineman.plantinajar.mixin.CropBlockAccess;
 import net.fabricmc.fabric.api.block.entity.BlockEntityClientSerializable;
+import net.minecraft.block.BambooBlock;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
+import net.minecraft.block.CactusBlock;
+import net.minecraft.block.CocoaBlock;
 import net.minecraft.block.CropBlock;
 import net.minecraft.block.FarmlandBlock;
+import net.minecraft.block.FluidBlock;
+import net.minecraft.block.GourdBlock;
 import net.minecraft.block.InventoryProvider;
 import net.minecraft.block.SaplingBlock;
+import net.minecraft.block.StemBlock;
+import net.minecraft.block.SugarCaneBlock;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.PlayerInventory;
@@ -15,6 +22,7 @@ import net.minecraft.inventory.Inventories;
 import net.minecraft.inventory.SidedInventory;
 import net.minecraft.item.BlockItem;
 import net.minecraft.item.ItemStack;
+import net.minecraft.item.Items;
 import net.minecraft.loot.context.LootContext;
 import net.minecraft.loot.context.LootContextParameters;
 import net.minecraft.nbt.CompoundTag;
@@ -30,7 +38,7 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.WorldAccess;
 
 public class JarBlockEntity extends BlockEntity implements Tickable, NamedScreenHandlerFactory, InventoryProvider, BlockEntityClientSerializable {
-    private static final int GROWTH_TIME = 10 * 20; 
+    public static final int GROWTH_TIME = 10 * 20; 
 
     private final JarInventory inventory = new JarInventory();
     private final JarOutputInventory output = new JarOutputInventory(10);
@@ -51,13 +59,28 @@ public class JarBlockEntity extends BlockEntity implements Tickable, NamedScreen
 
     @Override
     public void tick() {
-        if (canGrow(getRawPlant(), getBase())) {
+        if (canGrow()) {
             if (tickyes < GROWTH_TIME) {
                 tickyes++;
             } else {
                 if (!world.isClient && !hasOutputed) {
-                    for (ItemStack stack : getPlant().getDroppedStacks((new LootContext.Builder((ServerWorld)getWorld())).random(world.random).parameter(LootContextParameters.POSITION, pos).parameter(LootContextParameters.TOOL, ItemStack.EMPTY))) {
-                        output.addStack(stack);
+                    if (isTree(getPlant())) {
+                        for (ItemStack stack : getTreeBlockWood(getPlant()).getDroppedStacks((new LootContext.Builder((ServerWorld)getWorld())).random(world.random).parameter(LootContextParameters.POSITION, pos).parameter(LootContextParameters.TOOL, ItemStack.EMPTY))) {
+                            output.addStack(stack);
+                        }
+                        for (int i = 0; i < 5; i++) {
+                            for (ItemStack stack : getTreeBlockLeaf(getPlant()).getDroppedStacks((new LootContext.Builder((ServerWorld)getWorld())).random(world.random).parameter(LootContextParameters.POSITION, pos).parameter(LootContextParameters.TOOL, ItemStack.EMPTY))) {
+                                output.addStack(stack);
+                            }
+                        }
+                    } else if (getPlant().isOf(Blocks.CHORUS_FLOWER)) {
+                        for (ItemStack stack : Blocks.CHORUS_PLANT.getDefaultState().getDroppedStacks((new LootContext.Builder((ServerWorld)getWorld())).random(world.random).parameter(LootContextParameters.POSITION, pos).parameter(LootContextParameters.TOOL, ItemStack.EMPTY))) {
+                            output.addStack(stack);
+                        }
+                    } else {
+                        for (ItemStack stack : getPlant().getDroppedStacks((new LootContext.Builder((ServerWorld)getWorld())).random(world.random).parameter(LootContextParameters.POSITION, pos).parameter(LootContextParameters.TOOL, ItemStack.EMPTY))) {
+                            output.addStack(stack);
+                        }
                     }
                     hasOutputed = true;
                 }
@@ -71,6 +94,10 @@ public class JarBlockEntity extends BlockEntity implements Tickable, NamedScreen
     }
 
     public BlockState getBase() {
+        if (inventory.getStack(1).getItem().equals(Items.WATER_BUCKET)) {
+            return Blocks.WATER.getDefaultState().with(FluidBlock.LEVEL, 15);
+        }
+
         BlockState a;
         try {
             a = ((BlockItem)inventory.getStack(1).getItem()).getBlock().getDefaultState();
@@ -87,7 +114,19 @@ public class JarBlockEntity extends BlockEntity implements Tickable, NamedScreen
         return a;
     }
 
-    public boolean canGrow(BlockState plant, BlockState base) {
+    public boolean canGrow() {
+        BlockState plant = getRawPlant();
+        BlockState base = getBase();
+
+        if (getPlant().getBlock() instanceof GourdBlock) {
+            return getBase().isOf(Blocks.FARMLAND);
+        }
+        if (getPlant().isOf(Blocks.CHORUS_FLOWER)) {
+            return getBase().isOf(Blocks.END_STONE);
+        }
+        if (getPlant().isOf(Blocks.COCOA)) {
+            return getBase().isOf(Blocks.JUNGLE_LOG);
+        }
         if (plant.getBlock() instanceof CropBlock) {
             try {
                 return ((CropBlockAccess)plant.getBlock()).callCanPlantOnTop(base, null, null);
@@ -95,8 +134,12 @@ public class JarBlockEntity extends BlockEntity implements Tickable, NamedScreen
                 System.out.println("Epic Hacky Code Failed Scream At ThatTrollzer in the Fabric Discord If You See This");
                 e.printStackTrace();
             }
-        } else if (plant.getBlock() instanceof SaplingBlock) {
-            return true;
+        } else if (isTree(plant) ||
+                    getPlant().getBlock() instanceof CactusBlock || 
+                    getPlant().getBlock() instanceof BambooBlock || 
+                    getPlant().getBlock() instanceof SugarCaneBlock
+                ) {
+            return !getBase().isAir() && !getBase().isOf(Blocks.JUNGLE_LOG);
         }
 
         return false;
@@ -104,12 +147,21 @@ public class JarBlockEntity extends BlockEntity implements Tickable, NamedScreen
 
     public BlockState getPlant() {
         BlockState rawState = getRawPlant();
-
+        if (rawState.getBlock() instanceof StemBlock) {
+            return ((StemBlock)rawState.getBlock()).getGourdBlock().getDefaultState();
+        }
         if (rawState.getBlock() instanceof CropBlock) {
             CropBlock c = ((CropBlock)rawState.getBlock());
             int age = (int) ( ((float)tickyes) / ((float)GROWTH_TIME ) * (c.getMaxAge() + 1));
             if (age > c.getMaxAge()) age = c.getMaxAge();
             return c.withAge(age);
+        }
+        if (rawState.isOf(Blocks.COCOA)) {
+            CocoaBlock c = ((CocoaBlock)rawState.getBlock());
+            int maxAge = CocoaBlock.AGE.getValues().size() - 1;
+            int age = (int) ( ((float)tickyes) / ((float)GROWTH_TIME ) * (maxAge + 1));
+            if (age > maxAge) age = maxAge;
+            return c.getDefaultState().with(CocoaBlock.AGE, age);
         }
         
         return rawState;
@@ -121,6 +173,52 @@ public class JarBlockEntity extends BlockEntity implements Tickable, NamedScreen
         } catch (Exception no) {
             return Blocks.AIR.getDefaultState();
         }
+    }
+
+    public static boolean isTree(BlockState plant) {
+        return plant.getBlock() instanceof SaplingBlock || plant.isOf(Blocks.CRIMSON_FUNGUS) || plant.isOf(Blocks.WARPED_FUNGUS);
+    }
+
+    public static BlockState getTreeBlockWood(BlockState sappling) {
+        if (sappling.isOf(Blocks.OAK_SAPLING)) {
+            return Blocks.OAK_LOG.getDefaultState();
+        } else if (sappling.isOf(Blocks.JUNGLE_SAPLING)) {
+            return Blocks.JUNGLE_LOG.getDefaultState();
+        } else if (sappling.isOf(Blocks.DARK_OAK_SAPLING)) {
+            return Blocks.DARK_OAK_LOG.getDefaultState();
+        } else if (sappling.isOf(Blocks.BIRCH_SAPLING)) {
+            return Blocks.BIRCH_LOG.getDefaultState();
+        } else if (sappling.isOf(Blocks.ACACIA_SAPLING)) {
+            return Blocks.ACACIA_LOG.getDefaultState();
+        } else if (sappling.isOf(Blocks.SPRUCE_SAPLING)) {
+            return Blocks.SPRUCE_LOG.getDefaultState();
+        } else if (sappling.isOf(Blocks.CRIMSON_FUNGUS)) {
+            return Blocks.CRIMSON_STEM.getDefaultState();
+        } else if (sappling.isOf(Blocks.WARPED_FUNGUS)) {
+            return Blocks.WARPED_STEM.getDefaultState();
+        }
+        return Blocks.AIR.getDefaultState();
+    }
+
+    public static BlockState getTreeBlockLeaf(BlockState sappling) {
+        if (sappling.isOf(Blocks.OAK_SAPLING)) {
+            return Blocks.OAK_LEAVES.getDefaultState();
+        } else if (sappling.isOf(Blocks.JUNGLE_SAPLING)) {
+            return Blocks.JUNGLE_LEAVES.getDefaultState();
+        } else if (sappling.isOf(Blocks.DARK_OAK_SAPLING)) {
+            return Blocks.DARK_OAK_LEAVES.getDefaultState();
+        } else if (sappling.isOf(Blocks.BIRCH_SAPLING)) {
+            return Blocks.BIRCH_LEAVES.getDefaultState();
+        } else if (sappling.isOf(Blocks.ACACIA_SAPLING)) {
+            return Blocks.ACACIA_LEAVES.getDefaultState();
+        } else if (sappling.isOf(Blocks.SPRUCE_SAPLING)) {
+            return Blocks.SPRUCE_LEAVES.getDefaultState();
+        } else if (sappling.isOf(Blocks.CRIMSON_FUNGUS)) {
+            return Blocks.NETHER_WART_BLOCK.getDefaultState();
+        } else if (sappling.isOf(Blocks.WARPED_FUNGUS)) {
+            return Blocks.WARPED_WART_BLOCK.getDefaultState();
+        }
+        return Blocks.AIR.getDefaultState();
     }
 
     public JarOutputInventory getOutput() {
