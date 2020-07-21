@@ -5,6 +5,7 @@ import java.util.EnumSet;
 import java.util.List;
 
 import alexiil.mc.lib.attributes.fluid.amount.FluidAmount;
+import alexiil.mc.lib.attributes.fluid.mixin.api.IBucketItem;
 import alexiil.mc.lib.attributes.fluid.volume.FluidKeys;
 import alexiil.mc.lib.attributes.fluid.volume.FluidVolume;
 import alexiil.mc.lib.attributes.fluid.render.FluidRenderFace;
@@ -35,6 +36,8 @@ public class JarBlockEntityRenderer extends BlockEntityRenderer<JarBlockEntity> 
 
     public static final CoolTreeEnum[][][] tree;
     public static final CoolTreeEnum[][][] chorus;
+    public static final CoolTreeEnum[][][] RED_MUSHROOM;
+    public static final CoolTreeEnum[][][] BROWN_MUSHROOM;
 
     static {
         String[][] treePattern = {
@@ -201,8 +204,113 @@ public class JarBlockEntityRenderer extends BlockEntityRenderer<JarBlockEntity> 
 
         chorus = doTreeEpic(chorusPattern);
 
+        String[][] mushroomPattern1 = {
+            {
+                "     ",
+                "     ",
+                "  w  ",
+                "     ",
+                "     "
+            },
+            {
+                "     ",
+                "     ",
+                "  w  ",
+                "     ",
+                "     "
+            },
+            {
+                " lll ",
+                "l   l",
+                "l w l",
+                "l   l",
+                " lll "
+            },
+            {
+                " lll ",
+                "l   l",
+                "l w l",
+                "l   l",
+                " lll "
+            },
+            {
+                " lll ",
+                "l   l",
+                "l w l",
+                "l   l",
+                " lll "
+            },
+            {
+                "     ",
+                " lll ",
+                " lll ",
+                " lll ",
+                "     "
+            },
+        };
+        RED_MUSHROOM = doTreeEpic(mushroomPattern1);
+
+        String[][] mushroomPattern2 = {
+            {
+                "       ",
+                "       ",
+                "       ",
+                "   w   ",
+                "       ",
+                "       ",
+                "       "
+            },
+            {
+                "       ",
+                "       ",
+                "       ",
+                "   w   ",
+                "       ",
+                "       ",
+                "       "
+            },
+            {
+                "       ",
+                "       ",
+                "       ",
+                "   w   ",
+                "       ",
+                "       ",
+                "       "
+            },
+            {
+                "       ",
+                "       ",
+                "       ",
+                "   w   ",
+                "       ",
+                "       ",
+                "       "
+            },
+            {
+                "       ",
+                "       ",
+                "       ",
+                "   w   ",
+                "       ",
+                "       ",
+                "       "
+            },
+            {
+                " lllll ",
+                "lllllll",
+                "lllllll",
+                "lllllll",
+                "lllllll",
+                "lllllll",
+                " lllll "
+            },
+        };
+        
+        BROWN_MUSHROOM = doTreeEpic(mushroomPattern2);
+
         List<FluidRenderFace> a = new ArrayList<>();
-        FluidRenderFace.appendCuboid(0d, 0d, 0d, 1, 31d/32d, 1d, 1d, EnumSet.allOf(Direction.class), a);
+        FluidRenderFace.appendCuboid(0d, 0d, 0d, 1d, 1d, 1d, 1d, EnumSet.allOf(Direction.class), a);
         RENDER_FACES = a;
     }
 
@@ -263,8 +371,8 @@ public class JarBlockEntityRenderer extends BlockEntityRenderer<JarBlockEntity> 
     @Override
     public void render(JarBlockEntity entity, float tickDelta, MatrixStack matrices, VertexConsumerProvider vertexConsumers, int light, int overlay) {
         matrices.push();
-        matrices.translate(0d, 1d/32d, 0d);
         BlockState base = entity.getBase();
+        matrices.translate(0d, 1d/32d, 0d);
         if (base.isOf(Blocks.JUNGLE_LOG)) {
             matrices.translate(0d, 1d/32d, 0d);
             scaleCenterAligned(matrices, 0.999f, 1f, 0.999f);
@@ -272,8 +380,18 @@ public class JarBlockEntityRenderer extends BlockEntityRenderer<JarBlockEntity> 
             scaleBottomAligned(matrices, .5f);
             MinecraftClient.getInstance().getBlockRenderManager().renderBlockAsEntity(base, matrices, vertexConsumers, light, overlay);
         } else if (base.isOf(Blocks.WATER)) {
+            matrices.translate(0d, -1d/32d, 0d);
             scaleCenterAligned(matrices, 0.999f, 0.999f, 0.999f);
-            WATER_VOLUME.getRenderer().render(WATER_VOLUME, RENDER_FACES, vertexConsumers, matrices);
+            CoolFluidVolumeRenderer.INSTANCE.render(WATER_VOLUME, RENDER_FACES, vertexConsumers, matrices);
+        } else if (entity.getBaseItemStack().getItem() instanceof IBucketItem) {
+            matrices.translate(0d, -1d/32d, 0d);
+            scaleCenterAligned(matrices, 0.999f, 0.999f, 0.999f);
+            IBucketItem item = (IBucketItem)entity.getBaseItemStack().getItem();
+            if (!item.libblockattributes__getFluid(entity.getBaseItemStack()).equals(FluidKeys.EMPTY)) {
+                List<FluidRenderFace> a = new ArrayList<>();
+                FluidRenderFace.appendCuboid(0d, 0d, 0d, 1d, item.libblockattributes__getFluidVolumeAmount().asInexactDouble(), 1d, 1d, EnumSet.allOf(Direction.class), a);
+                CoolFluidVolumeRenderer.INSTANCE.render(item.libblockattributes__getFluid(entity.getBaseItemStack()).withAmount(FluidAmount.BUCKET), a, vertexConsumers, matrices);
+            }
         } else {
             matrices.translate(0.0005f, 0f, 0.0005f);
             matrices.scale(0.999f, 1f/32f, 0.999f);
@@ -302,6 +420,20 @@ public class JarBlockEntityRenderer extends BlockEntityRenderer<JarBlockEntity> 
             if (scalefactor > 1) scalefactor = 1;
             scaleBottomAligned(matrices, scalefactor);
             renderTree(Blocks.CHORUS_PLANT.getDefaultState().with(ConnectingBlock.DOWN, true).with(ConnectingBlock.UP, true).with(ConnectingBlock.NORTH, true).with(ConnectingBlock.SOUTH, true).with(ConnectingBlock.WEST, true).with(ConnectingBlock.EAST, true), Blocks.CHORUS_FLOWER.getDefaultState(), chorus, matrices, vertexConsumers, light, overlay);
+        } else if (entity.getPlant().isOf(Blocks.RED_MUSHROOM)) {
+            matrices.translate(0, -0.5f, 0);
+            scaleCenterAligned(matrices, 1f/7f, 1f/7f, 1f/7f);
+            float scalefactor = (entity.getTickyes() + tickDelta) * 0.005f;
+            if (scalefactor > 1) scalefactor = 1;
+            scaleBottomAligned(matrices, scalefactor);
+            renderTree(Blocks.MUSHROOM_STEM.getDefaultState(), Blocks.RED_MUSHROOM_BLOCK.getDefaultState(), RED_MUSHROOM, matrices, vertexConsumers, light, overlay);
+        } else if (entity.getPlant().isOf(Blocks.BROWN_MUSHROOM)) {
+            matrices.translate(0, -0.5f, 0);
+            scaleCenterAligned(matrices, 1f/7f, 1f/7f, 1f/7f);
+            float scalefactor = (entity.getTickyes() + tickDelta) * 0.005f;
+            if (scalefactor > 1) scalefactor = 1;
+            scaleBottomAligned(matrices, scalefactor);
+            renderTree(Blocks.MUSHROOM_STEM.getDefaultState(), Blocks.BROWN_MUSHROOM_BLOCK.getDefaultState(), BROWN_MUSHROOM, matrices, vertexConsumers, light, overlay);
         } else if (entity.getPlant().getBlock() instanceof GourdBlock || 
                 entity.getPlant().getBlock() instanceof CactusBlock || 
                 entity.getPlant().getBlock() instanceof BambooBlock || 
@@ -310,6 +442,22 @@ public class JarBlockEntityRenderer extends BlockEntityRenderer<JarBlockEntity> 
         {
             matrices.translate(0, -0.5f, 0);
             scaleCenterAligned(matrices, 2f/3f, 2f/3f, 2f/3f);
+            float scalefactor = (entity.getTickyes() + tickDelta) * 0.005f;
+            if (scalefactor > 1) scalefactor = 1;
+            scaleBottomAligned(matrices, scalefactor);
+            MinecraftClient.getInstance().getBlockRenderManager().renderBlockAsEntity(entity.getPlant(), matrices, vertexConsumers, light, overlay);
+        } else if (entity.getPlant().isOf(Blocks.SEAGRASS) || entity.getPlant().isOf(Blocks.KELP)) {
+            matrices.translate(0, -0.5f, 0);
+            float scalefactor = (entity.getTickyes() + tickDelta) * 0.005f;
+            if (scalefactor > 1) scalefactor = 1;
+            scaleBottomAligned(matrices, scalefactor);
+            MinecraftClient.getInstance().getBlockRenderManager().renderBlockAsEntity(entity.getPlant(), matrices, vertexConsumers, light, overlay);
+        } else if (entity.getPlant().isOf(Blocks.LILY_PAD)) {
+            matrices.translate(0, -0.5f + -1f/16f, 0);
+            if (entity.getBaseItemStack().getItem() instanceof IBucketItem) {
+                IBucketItem item = (IBucketItem)entity.getBaseItemStack().getItem();
+                matrices.translate(0d, item.libblockattributes__getFluidVolumeAmount().asInexactDouble(), 0d);
+            }
             float scalefactor = (entity.getTickyes() + tickDelta) * 0.005f;
             if (scalefactor > 1) scalefactor = 1;
             scaleBottomAligned(matrices, scalefactor);

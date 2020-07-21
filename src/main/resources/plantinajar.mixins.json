@@ -4,7 +4,7 @@
   "package": "io.github.coolmineman.plantinajar.mixin",
   "compatibilityLevel": "JAVA_8",
   "mixins": [
-    "CropBlockAccess"
+    "PlantBlockAccess"
   ],
   "injectors": {
     "defaultRequire": 1

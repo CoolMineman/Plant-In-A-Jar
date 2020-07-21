@@ -4,11 +4,11 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.gen.Invoker;
 
 import net.minecraft.block.BlockState;
-import net.minecraft.block.CropBlock;
+import net.minecraft.block.PlantBlock;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.BlockView;
 
-@Mixin(CropBlock.class)
-public interface CropBlockAccess {
+@Mixin(PlantBlock.class)
+public interface PlantBlockAccess {
     @Invoker public boolean callCanPlantOnTop(BlockState floor, BlockView world, BlockPos pos);
 }
