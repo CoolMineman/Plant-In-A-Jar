@@ -136,7 +136,7 @@ public class JarBlockEntity extends BlockEntity implements Tickable, NamedScreen
         if (getPlant().isOf(Blocks.COCOA)) {
             return getBase().isOf(Blocks.JUNGLE_LOG);
         }
-        if (getPlant().isOf(Blocks.SEAGRASS) || getPlant().isOf(Blocks.KELP)) {
+        if (getPlant().isOf(Blocks.SEAGRASS) || getPlant().isOf(Blocks.KELP) || getPlant().isOf(Blocks.SEA_PICKLE)) {
             return getBase().isOf(Blocks.WATER);
         }
         if (getPlant().isOf(Blocks.LILY_PAD)) {

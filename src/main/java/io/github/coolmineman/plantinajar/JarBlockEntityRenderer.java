@@ -446,7 +446,7 @@ public class JarBlockEntityRenderer extends BlockEntityRenderer<JarBlockEntity> 
             if (scalefactor > 1) scalefactor = 1;
             scaleBottomAligned(matrices, scalefactor);
             MinecraftClient.getInstance().getBlockRenderManager().renderBlockAsEntity(entity.getPlant(), matrices, vertexConsumers, light, overlay);
-        } else if (entity.getPlant().isOf(Blocks.SEAGRASS) || entity.getPlant().isOf(Blocks.KELP)) {
+        } else if (entity.getPlant().isOf(Blocks.SEAGRASS) || entity.getPlant().isOf(Blocks.KELP) || entity.getPlant().isOf(Blocks.SEA_PICKLE)) {
             matrices.translate(0, -0.5f, 0);
             float scalefactor = (entity.getTickyes() + tickDelta) * 0.005f;
             if (scalefactor > 1) scalefactor = 1;
