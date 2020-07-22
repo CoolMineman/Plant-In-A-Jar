@@ -23,6 +23,9 @@
     ],
     "client": [
       "io.github.coolmineman.plantinajar.PlantInAJarClient"
+    ],
+    "modmenu": [
+      "io.github.coolmineman.plantinajar.BadMenuIntegration"
     ]
   },
   "mixins": [

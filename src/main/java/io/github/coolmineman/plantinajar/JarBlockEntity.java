@@ -13,7 +13,6 @@ import net.minecraft.block.CropBlock;
 import net.minecraft.block.FarmlandBlock;
 import net.minecraft.block.FluidBlock;
 import net.minecraft.block.GourdBlock;
-import net.minecraft.block.HopperBlock;
 import net.minecraft.block.InventoryProvider;
 import net.minecraft.block.NetherWartBlock;
 import net.minecraft.block.SaplingBlock;
@@ -45,7 +44,7 @@ import net.minecraft.util.math.Direction;
 import net.minecraft.world.WorldAccess;
 
 public class JarBlockEntity extends BlockEntity implements Tickable, NamedScreenHandlerFactory, InventoryProvider, BlockEntityClientSerializable {
-    public static final int GROWTH_TIME = 10 * 20; 
+    public static final int GROWTH_TIME = PlantInAJar.CONFIG.getGrowthTime() * 20;
 
     private final JarInventory inventory = new JarInventory();
     private final JarOutputInventory output = new JarOutputInventory(10);

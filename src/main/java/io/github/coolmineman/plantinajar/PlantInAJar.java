@@ -1,5 +1,8 @@
 package io.github.coolmineman.plantinajar;
 
+import io.github.coolmineman.plantinajar.config.AutoConfigurater;
+import me.sargunvohra.mcmods.autoconfig1u.AutoConfig;
+import me.sargunvohra.mcmods.autoconfig1u.serializer.GsonConfigSerializer;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.object.builder.v1.block.FabricBlockSettings;
 import net.fabricmc.fabric.api.screenhandler.v1.ScreenHandlerRegistry;
@@ -15,9 +18,18 @@ import net.minecraft.util.Identifier;
 import net.minecraft.util.registry.Registry;
 
 public class PlantInAJar implements ModInitializer {
+
+	public static final AutoConfigurater CONFIG;
+
+	static {
+		AutoConfig.register(AutoConfigurater.class, GsonConfigSerializer::new);
+		CONFIG = AutoConfig.getConfigHolder(AutoConfigurater.class).getConfig();
+	}
+
 	public static final Block PLANT_JAR = new JarBlock(FabricBlockSettings.copyOf(Blocks.GLASS));
 	public static BlockEntityType<JarBlockEntity> PLANT_JAR_ENTITY;
 	public static ScreenHandlerType<JarGuiDescription> EPIC_SCREEN_HAND_YES;
+	
 
 	@Override
 	public void onInitialize() {
