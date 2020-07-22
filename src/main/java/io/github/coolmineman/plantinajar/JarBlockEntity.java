@@ -13,15 +13,18 @@ import net.minecraft.block.CropBlock;
 import net.minecraft.block.FarmlandBlock;
 import net.minecraft.block.FluidBlock;
 import net.minecraft.block.GourdBlock;
+import net.minecraft.block.HopperBlock;
 import net.minecraft.block.InventoryProvider;
 import net.minecraft.block.NetherWartBlock;
 import net.minecraft.block.SaplingBlock;
 import net.minecraft.block.StemBlock;
 import net.minecraft.block.SugarCaneBlock;
 import net.minecraft.block.entity.BlockEntity;
+import net.minecraft.block.entity.HopperBlockEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.inventory.Inventories;
+import net.minecraft.inventory.Inventory;
 import net.minecraft.inventory.SidedInventory;
 import net.minecraft.item.BlockItem;
 import net.minecraft.item.ItemStack;
@@ -38,6 +41,7 @@ import net.minecraft.text.TranslatableText;
 import net.minecraft.util.Tickable;
 import net.minecraft.util.collection.DefaultedList;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Direction;
 import net.minecraft.world.WorldAccess;
 
 public class JarBlockEntity extends BlockEntity implements Tickable, NamedScreenHandlerFactory, InventoryProvider, BlockEntityClientSerializable {
@@ -58,6 +62,24 @@ public class JarBlockEntity extends BlockEntity implements Tickable, NamedScreen
                 sync();
             }
         });
+    }
+
+    public void shoveOutputDown() {
+        Inventory down = HopperBlockEntity.getInventoryAt(world, this.pos.down());
+        if (down != null) {
+            for(int i = 0; i < this.getOutput().size(); ++i) {
+                if (!this.getOutput().getStack(i).isEmpty()) {
+                    ItemStack itemStack = this.getOutput().getStack(i).copy();
+                    ItemStack itemStack2 = HopperBlockEntity.transfer(this.getOutput(), down, this.getOutput().removeStack(i, 1), Direction.UP);
+                    if (itemStack2.isEmpty()) {
+                        inventory.markDirty();
+                        continue;
+                    }
+ 
+                   this.getOutput().setStack(i, itemStack);
+                }
+            }
+        }
     }
 
     @Override
@@ -96,6 +118,7 @@ public class JarBlockEntity extends BlockEntity implements Tickable, NamedScreen
                 }
             }
         }
+        shoveOutputDown();
     }
 
     public ItemStack getBaseItemStack() {
