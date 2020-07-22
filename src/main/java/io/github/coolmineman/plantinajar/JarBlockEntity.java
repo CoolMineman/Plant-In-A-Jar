@@ -44,7 +44,9 @@ import net.minecraft.util.math.Direction;
 import net.minecraft.world.WorldAccess;
 
 public class JarBlockEntity extends BlockEntity implements Tickable, NamedScreenHandlerFactory, InventoryProvider, BlockEntityClientSerializable {
-    public static final int GROWTH_TIME = PlantInAJar.CONFIG.getGrowthTime() * 20;
+    public static int getGrowthTime() {
+        return PlantInAJar.CONFIG.getGrowthTime() * 20;
+    }
 
     private final JarInventory inventory = new JarInventory();
     private final JarOutputInventory output = new JarOutputInventory(10);
@@ -84,7 +86,7 @@ public class JarBlockEntity extends BlockEntity implements Tickable, NamedScreen
     @Override
     public void tick() {
         if (canGrow()) {
-            if (tickyes < GROWTH_TIME) {
+            if (tickyes < getGrowthTime()) {
                 tickyes++;
             } else {
                 if (!world.isClient && !hasOutputed) {
@@ -110,7 +112,7 @@ public class JarBlockEntity extends BlockEntity implements Tickable, NamedScreen
                     }
                     hasOutputed = true;
                 }
-                if (!world.isClient && output.isEmpty() && tickyes >= GROWTH_TIME) {
+                if (!world.isClient && output.isEmpty() && tickyes >= getGrowthTime()) {
                     hasOutputed = false;
                     tickyes = 0;
                     sync();
@@ -195,21 +197,21 @@ public class JarBlockEntity extends BlockEntity implements Tickable, NamedScreen
         }
         if (rawState.getBlock() instanceof CropBlock) {
             CropBlock c = ((CropBlock)rawState.getBlock());
-            int age = (int) ( ((float)tickyes) / ((float)GROWTH_TIME ) * (c.getMaxAge() + 1));
+            int age = (int) ( ((float)tickyes) / ((float)getGrowthTime() ) * (c.getMaxAge() + 1));
             if (age > c.getMaxAge()) age = c.getMaxAge();
             return c.withAge(age);
         }
         if (rawState.getBlock() instanceof NetherWartBlock) {
             NetherWartBlock c = ((NetherWartBlock)rawState.getBlock());
             int maxAge = NetherWartBlock.AGE.getValues().size() - 1;
-            int age = (int) ( ((float)tickyes) / ((float)GROWTH_TIME ) * (maxAge + 1));
+            int age = (int) ( ((float)tickyes) / ((float)getGrowthTime() ) * (maxAge + 1));
             if (age > maxAge) age = maxAge;
             return c.getDefaultState().with(NetherWartBlock.AGE, age);
         }
         if (rawState.isOf(Blocks.COCOA)) {
             CocoaBlock c = ((CocoaBlock)rawState.getBlock());
             int maxAge = CocoaBlock.AGE.getValues().size() - 1;
-            int age = (int) ( ((float)tickyes) / ((float)GROWTH_TIME ) * (maxAge + 1));
+            int age = (int) ( ((float)tickyes) / ((float)getGrowthTime() ) * (maxAge + 1));
             if (age > maxAge) age = maxAge;
             return c.getDefaultState().with(CocoaBlock.AGE, age);
         }
