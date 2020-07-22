@@ -5,7 +5,7 @@ import me.sargunvohra.mcmods.autoconfig1u.annotation.Config;
 
 @Config(name = "plantinajar")
 public class AutoConfigurater implements ConfigData {
-    boolean dropItems = false;
+    boolean dropItems = true;
     int growthTime = 10;
 
     public boolean shouldDropItems() {

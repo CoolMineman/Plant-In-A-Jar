@@ -3,6 +3,7 @@ package io.github.coolmineman.plantinajar;
 import alexiil.mc.lib.attributes.fluid.mixin.api.IBucketItem;
 import alexiil.mc.lib.attributes.fluid.volume.FluidKeys;
 import io.github.coolmineman.plantinajar.mixin.PlantBlockAccess;
+import io.netty.util.internal.ThreadLocalRandom;
 import net.fabricmc.fabric.api.block.entity.BlockEntityClientSerializable;
 import net.minecraft.block.BambooBlock;
 import net.minecraft.block.BlockState;
@@ -70,13 +71,7 @@ public class JarBlockEntity extends BlockEntity implements Tickable, NamedScreen
         if (down != null) {
             for(int i = 0; i < this.getOutput().size(); ++i) {
                 if (!this.getOutput().getStack(i).isEmpty()) {
-                    ItemStack itemStack = this.getOutput().getStack(i).copy();
-                    ItemStack itemStack2 = HopperBlockEntity.transfer(this.getOutput(), down, this.getOutput().removeStack(i, 1), Direction.UP);
-                    if (itemStack2.isEmpty()) {
-                        inventory.markDirty();
-                        continue;
-                    }
- 
+                    ItemStack itemStack = HopperBlockEntity.transfer(this.getOutput(), down, this.getOutput().getStack(i), Direction.UP);
                    this.getOutput().setStack(i, itemStack);
                 }
             }
@@ -90,24 +85,29 @@ public class JarBlockEntity extends BlockEntity implements Tickable, NamedScreen
                 tickyes++;
             } else {
                 if (!world.isClient && !hasOutputed) {
-                    if (isTree(getPlant())) {
-                        for (ItemStack stack : getTreeBlockWood(getPlant()).getDroppedStacks((new LootContext.Builder((ServerWorld)getWorld())).random(world.random).parameter(LootContextParameters.POSITION, pos).parameter(LootContextParameters.TOOL, ItemStack.EMPTY))) {
-                            output.addStack(stack);
-                        }
-                        for (int i = 0; i < 5; i++) {
-                            for (ItemStack stack : getTreeBlockLeaf(getPlant()).getDroppedStacks((new LootContext.Builder((ServerWorld)getWorld())).random(world.random).parameter(LootContextParameters.POSITION, pos).parameter(LootContextParameters.TOOL, ItemStack.EMPTY))) {
+                    if (PlantInAJar.CONFIG.shouldDropItems()) {
+                        if (isTree(getPlant())) {
+                            for (ItemStack stack : getTreeBlockWood(getPlant()).getDroppedStacks((new LootContext.Builder((ServerWorld)getWorld())).random(world.random).parameter(LootContextParameters.POSITION, pos).parameter(LootContextParameters.TOOL, ItemStack.EMPTY))) {
+                                output.addStack(stack);
+                            }
+                            for (int i = 0; i < 5; i++) {
+                                for (ItemStack stack : getTreeBlockLeaf(getPlant()).getDroppedStacks((new LootContext.Builder((ServerWorld)getWorld())).random(world.random).parameter(LootContextParameters.POSITION, pos).parameter(LootContextParameters.TOOL, ItemStack.EMPTY))) {
+                                    output.addStack(stack);
+                                }
+                            }
+                        } else if (getPlant().isOf(Blocks.CHORUS_FLOWER)) {
+                            for (ItemStack stack : Blocks.CHORUS_PLANT.getDefaultState().getDroppedStacks((new LootContext.Builder((ServerWorld)getWorld())).random(world.random).parameter(LootContextParameters.POSITION, pos).parameter(LootContextParameters.TOOL, ItemStack.EMPTY))) {
+                                output.addStack(stack);
+                            }
+                        } else if (getPlant().isOf(Blocks.SEAGRASS)) {
+                            output.addStack(new ItemStack(Items.SEAGRASS));
+                        } else {
+                            for (ItemStack stack : getPlant().getDroppedStacks((new LootContext.Builder((ServerWorld)getWorld())).random(world.random).parameter(LootContextParameters.POSITION, pos).parameter(LootContextParameters.TOOL, ItemStack.EMPTY))) {
                                 output.addStack(stack);
                             }
                         }
-                    } else if (getPlant().isOf(Blocks.CHORUS_FLOWER)) {
-                        for (ItemStack stack : Blocks.CHORUS_PLANT.getDefaultState().getDroppedStacks((new LootContext.Builder((ServerWorld)getWorld())).random(world.random).parameter(LootContextParameters.POSITION, pos).parameter(LootContextParameters.TOOL, ItemStack.EMPTY))) {
-                            output.addStack(stack);
-                        }
-                    } else if (getPlant().isOf(Blocks.SEAGRASS)) {
-                        output.addStack(new ItemStack(Items.SEAGRASS));
-                    } else {
-                        for (ItemStack stack : getPlant().getDroppedStacks((new LootContext.Builder((ServerWorld)getWorld())).random(world.random).parameter(LootContextParameters.POSITION, pos).parameter(LootContextParameters.TOOL, ItemStack.EMPTY))) {
-                            output.addStack(stack);
+                        if ((getPlant().isOf(Blocks.CRIMSON_FUNGUS) || getPlant().isOf(Blocks.WARPED_FUNGUS)) && ThreadLocalRandom.current().nextInt(0, 99) < 20) {
+                            output.addStack(Blocks.SHROOMLIGHT.getDefaultState().getDroppedStacks((new LootContext.Builder((ServerWorld)getWorld())).random(world.random).parameter(LootContextParameters.POSITION, pos).parameter(LootContextParameters.TOOL, ItemStack.EMPTY)).get(0));
                         }
                     }
                     hasOutputed = true;
@@ -119,7 +119,8 @@ public class JarBlockEntity extends BlockEntity implements Tickable, NamedScreen
                 }
             }
         }
-        shoveOutputDown();
+        if (!world.isClient)
+            shoveOutputDown();
     }
 
     public ItemStack getBaseItemStack() {
