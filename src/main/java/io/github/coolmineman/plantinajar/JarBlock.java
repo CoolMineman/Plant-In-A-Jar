@@ -1,5 +1,8 @@
 package io.github.coolmineman.plantinajar;
 
+import java.util.List;
+
+import net.minecraft.block.Block;
 import net.minecraft.block.BlockRenderType;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.BlockWithEntity;
@@ -7,6 +10,11 @@ import net.minecraft.block.InventoryProvider;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.inventory.SidedInventory;
+import net.minecraft.inventory.SimpleInventory;
+import net.minecraft.item.ItemStack;
+import net.minecraft.loot.context.LootContextParameters;
+import net.minecraft.loot.context.LootContext.Builder;
+import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
 import net.minecraft.util.hit.BlockHitResult;
@@ -46,5 +54,16 @@ public class JarBlock extends BlockWithEntity implements InventoryProvider {
         }
         return null;
     }
-
+    
+    @Override
+    public List<ItemStack> getDroppedStacks(BlockState state, Builder builder) {
+        List<ItemStack> tmp = super.getDroppedStacks(state, builder);
+        BlockEntity e = builder.getNullable(LootContextParameters.BLOCK_ENTITY);
+        if (e instanceof JarBlockEntity) {
+            for (ItemStack a : ((SimpleInventory)((JarBlockEntity)e).getInventory(null, null, null)).clearToList()) {
+               tmp.add(a);
+            }
+        }
+        return tmp;
+    }
 }

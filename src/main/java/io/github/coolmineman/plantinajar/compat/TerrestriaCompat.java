@@ -46,7 +46,7 @@ public class TerrestriaCompat implements Compat {
         if (sappling.isOf(TerrestriaBlocks.JUNGLE_PALM_SAPLING)) {
             return Blocks.JUNGLE_LOG.getDefaultState();
         }
-        //todo What is this?
+        //todo ~~What is this?~~ add support?
         // if (sappling.isOf(TerrestriaBlocks.SAGUARO_CACTUS_SAPLING)) {
         //     return null;
         // }
@@ -94,7 +94,7 @@ public class TerrestriaCompat implements Compat {
         if (sappling.isOf(TerrestriaBlocks.JUNGLE_PALM_SAPLING)) {
             return Blocks.JUNGLE_LEAVES.getDefaultState();
         }
-        //todo What is this?
+        //todo ~~What is this?~~ se above
         // if (sappling.isOf(TerrestriaBlocks.SAGUARO_CACTUS_SAPLING)) {
         //     return null;
         // }
