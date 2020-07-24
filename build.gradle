@@ -23,6 +23,14 @@ repositories {
 		name = "Bad Menu"
 		url = "https://maven.fabricmc.net/io/github/prospector/modmenu/"
 	}
+	maven {
+        name = 'Earthcomputer Mods'
+        url = 'https://dl.bintray.com/earthcomputer/mods'
+    }
+	maven {
+		name = "No"
+		url 'https://jitpack.io'
+	}
 	jcenter()
 }
 
@@ -42,10 +50,12 @@ dependencies {
 	modImplementation "me.sargunvohra.mcmods:autoconfig1u:${project.autoconfig_version}"
 	include "me.sargunvohra.mcmods:autoconfig1u:${project.autoconfig_version}"
 
-	modImplementation "me.shedaniel.cloth:config-2:${project.cloth_version}"
+	modImplementation "me.shedaniel.cloth:config-2:${project.cloth_version}"  
 	include "me.shedaniel.cloth:config-2:${project.cloth_version}"
 
 	modImplementation "io.github.prospector:modmenu:${project.badmenu_version}"
+
+	modImplementation "com.github.TerraformersMC:Terrestria:v2.0.4"
 
 	// PSA: Some older mods, compiled on Loom 0.2.1, might have outdated Maven POMs.
 	// You may need to force-disable transitiveness on them.

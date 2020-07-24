@@ -2,6 +2,7 @@ package io.github.coolmineman.plantinajar;
 
 import alexiil.mc.lib.attributes.fluid.mixin.api.IBucketItem;
 import alexiil.mc.lib.attributes.fluid.volume.FluidKeys;
+import io.github.coolmineman.plantinajar.compat.CompatManager;
 import io.github.coolmineman.plantinajar.mixin.PlantBlockAccess;
 import io.netty.util.internal.ThreadLocalRandom;
 import net.fabricmc.fabric.api.block.entity.BlockEntityClientSerializable;
@@ -250,7 +251,12 @@ public class JarBlockEntity extends BlockEntity implements Tickable, NamedScreen
         } else if (sappling.isOf(Blocks.WARPED_FUNGUS)) {
             return Blocks.WARPED_STEM.getDefaultState();
         }
-        return Blocks.AIR.getDefaultState();
+        BlockState compBlockState = CompatManager.getTreeBlockWood(sappling);
+        if (compBlockState == null) {
+            return Blocks.AIR.getDefaultState();
+        } else {
+            return compBlockState;
+        }
     }
 
     public static BlockState getTreeBlockLeaf(BlockState sappling) {
@@ -271,7 +277,12 @@ public class JarBlockEntity extends BlockEntity implements Tickable, NamedScreen
         } else if (sappling.isOf(Blocks.WARPED_FUNGUS)) {
             return Blocks.WARPED_WART_BLOCK.getDefaultState();
         }
-        return Blocks.AIR.getDefaultState();
+        BlockState compBlockState = CompatManager.getTreeBlockLeaf(sappling);
+        if (compBlockState == null) {
+            return Blocks.AIR.getDefaultState();
+        } else {
+            return compBlockState;
+        }
     }
 
     public JarOutputInventory getOutput() {

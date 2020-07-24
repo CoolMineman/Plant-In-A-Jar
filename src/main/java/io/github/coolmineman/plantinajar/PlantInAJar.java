@@ -1,5 +1,6 @@
 package io.github.coolmineman.plantinajar;
 
+import io.github.coolmineman.plantinajar.compat.CompatManager;
 import io.github.coolmineman.plantinajar.config.AutoConfigurater;
 import me.sargunvohra.mcmods.autoconfig1u.AutoConfig;
 import me.sargunvohra.mcmods.autoconfig1u.serializer.GsonConfigSerializer;
@@ -40,6 +41,7 @@ public class PlantInAJar implements ModInitializer {
 		Registry.register(Registry.ITEM, new Identifier("plantinajar", "plant_jar"), new BlockItem(PLANT_JAR, new Item.Settings().group(ItemGroup.MISC)));
 		PLANT_JAR_ENTITY = Registry.register(Registry.BLOCK_ENTITY_TYPE, "plantinajar:plant_jar", BlockEntityType.Builder.create(JarBlockEntity::new, PLANT_JAR).build(null));
 		EPIC_SCREEN_HAND_YES = ScreenHandlerRegistry.registerSimple(new Identifier("plantinajar", "plant_jar"), (syncId, inventory) -> new JarGuiDescription(syncId, inventory, ScreenHandlerContext.EMPTY));
+		CompatManager.init();
 		System.out.println("You Can Put Your Plants In Jars Now!");
 	}
 }
