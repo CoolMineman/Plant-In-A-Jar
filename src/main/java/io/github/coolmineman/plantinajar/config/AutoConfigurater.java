@@ -7,7 +7,9 @@ import me.sargunvohra.mcmods.autoconfig1u.ConfigData;
 import me.sargunvohra.mcmods.autoconfig1u.ConfigManager;
 import me.sargunvohra.mcmods.autoconfig1u.annotation.ConfigEntry;
 import me.sargunvohra.mcmods.autoconfig1u.annotation.Config;
+import net.minecraft.block.Blocks;
 import net.minecraft.util.Identifier;
+import net.minecraft.util.registry.Registry;
 
 @Config(name = "plantinajar")
 public class AutoConfigurater implements ConfigData {
@@ -21,6 +23,7 @@ public class AutoConfigurater implements ConfigData {
     }
 
     public int getGrowthTime(Identifier i) {
+        if (i.equals(Registry.BLOCK.getId(Blocks.AIR))) return growthTime;
         boolean needsResave = false;
         if (perItemGrowthTimes.get(i.toString()) == null) {
             needsResave = true;
