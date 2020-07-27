@@ -43,11 +43,14 @@ import net.minecraft.util.Tickable;
 import net.minecraft.util.collection.DefaultedList;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
+import net.minecraft.util.registry.Registry;
 import net.minecraft.world.WorldAccess;
 
 public class JarBlockEntity extends BlockEntity implements Tickable, NamedScreenHandlerFactory, InventoryProvider, BlockEntityClientSerializable {
-    public static int getGrowthTime() {
-        return PlantInAJar.CONFIG.getGrowthTime() * 20;
+    private Integer clientGrowthTime = null;
+    public int getGrowthTime() {
+        if (clientGrowthTime != null) return clientGrowthTime;
+        return PlantInAJar.CONFIG.getGrowthTime(Registry.BLOCK.getId(getRawPlant().getBlock())) * 20;
     }
 
     private final JarInventory inventory = new JarInventory();
@@ -113,7 +116,7 @@ public class JarBlockEntity extends BlockEntity implements Tickable, NamedScreen
                     }
                     hasOutputed = true;
                 }
-                if (!world.isClient && output.isEmpty() && tickyes >= getGrowthTime()) {
+                if (!world.isClient && PlantInAJar.CONFIG.shouldDropItems() && output.isEmpty() && tickyes >= getGrowthTime()) {
                     hasOutputed = false;
                     tickyes = 0;
                     sync();
@@ -186,7 +189,7 @@ public class JarBlockEntity extends BlockEntity implements Tickable, NamedScreen
                     getPlant().isOf(Blocks.RED_MUSHROOM) ||
                     getPlant().isOf(Blocks.BROWN_MUSHROOM)
                 ) {
-            return !getBase().isAir() && !getBase().isOf(Blocks.JUNGLE_LOG);
+            return !getBase().isAir() && !getBase().isOf(Blocks.JUNGLE_LOG) && !(getBaseItemStack().getItem() instanceof IBucketItem);
         }
 
         return false;
@@ -328,11 +331,14 @@ public class JarBlockEntity extends BlockEntity implements Tickable, NamedScreen
     @Override
     public void fromClientTag(CompoundTag tag) {
         fromTag(null, tag);
+        clientGrowthTime = tag.getInt("growthTime");
     }
 
     @Override
     public CompoundTag toClientTag(CompoundTag tag) {
-        return toTag(tag);
+        toTag(tag);
+        tag.putInt("growthTime", getGrowthTime());
+        return tag;
     }
 
     public int getTickyes() {

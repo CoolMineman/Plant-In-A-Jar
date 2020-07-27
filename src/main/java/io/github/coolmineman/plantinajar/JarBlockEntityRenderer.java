@@ -314,8 +314,8 @@ public class JarBlockEntityRenderer extends BlockEntityRenderer<JarBlockEntity> 
         RENDER_FACES = a;
     }
 
-    public static float getScaleFactor() {
-        return 1f / (PlantInAJar.CONFIG.getGrowthTime() * 20);
+    public static float getScaleFactor(JarBlockEntity e) {
+        return 1f / (e.getGrowthTime());
     }
 
     public static CoolTreeEnum[][][] doTreeEpic(String[][] treePattern) {
@@ -409,7 +409,7 @@ public class JarBlockEntityRenderer extends BlockEntityRenderer<JarBlockEntity> 
         if (JarBlockEntity.isTree(entity.getPlant())) {
             matrices.translate(0, -0.5f, 0);
             scaleCenterAligned(matrices, 1f/7f, 1f/7f, 1f/7f);
-            float scalefactor = (entity.getTickyes() + tickDelta) * getScaleFactor();
+            float scalefactor = (entity.getTickyes() + tickDelta) * getScaleFactor(entity);
             if (scalefactor > 1) scalefactor = 1;
             scaleBottomAligned(matrices, scalefactor);
             renderTree(JarBlockEntity.getTreeBlockWood(entity.getPlant()), JarBlockEntity.getTreeBlockLeaf(entity.getPlant()), tree, matrices, vertexConsumers, light, overlay);
@@ -420,21 +420,21 @@ public class JarBlockEntityRenderer extends BlockEntityRenderer<JarBlockEntity> 
         } else if (entity.getPlant().isOf(Blocks.CHORUS_FLOWER)) {
             matrices.translate(0, -0.5f, 0);
             scaleCenterAligned(matrices, 1f/17f, 1f/17f, 1f/17f);
-            float scalefactor = (entity.getTickyes() + tickDelta) * getScaleFactor();
+            float scalefactor = (entity.getTickyes() + tickDelta) * getScaleFactor(entity);
             if (scalefactor > 1) scalefactor = 1;
             scaleBottomAligned(matrices, scalefactor);
             renderTree(Blocks.CHORUS_PLANT.getDefaultState().with(ConnectingBlock.DOWN, true).with(ConnectingBlock.UP, true).with(ConnectingBlock.NORTH, true).with(ConnectingBlock.SOUTH, true).with(ConnectingBlock.WEST, true).with(ConnectingBlock.EAST, true), Blocks.CHORUS_FLOWER.getDefaultState(), chorus, matrices, vertexConsumers, light, overlay);
         } else if (entity.getPlant().isOf(Blocks.RED_MUSHROOM)) {
             matrices.translate(0, -0.5f, 0);
             scaleCenterAligned(matrices, 1f/7f, 1f/7f, 1f/7f);
-            float scalefactor = (entity.getTickyes() + tickDelta) * getScaleFactor();
+            float scalefactor = (entity.getTickyes() + tickDelta) * getScaleFactor(entity);
             if (scalefactor > 1) scalefactor = 1;
             scaleBottomAligned(matrices, scalefactor);
             renderTree(Blocks.MUSHROOM_STEM.getDefaultState(), Blocks.RED_MUSHROOM_BLOCK.getDefaultState(), RED_MUSHROOM, matrices, vertexConsumers, light, overlay);
         } else if (entity.getPlant().isOf(Blocks.BROWN_MUSHROOM)) {
             matrices.translate(0, -0.5f, 0);
             scaleCenterAligned(matrices, 1f/7f, 1f/7f, 1f/7f);
-            float scalefactor = (entity.getTickyes() + tickDelta) * getScaleFactor();
+            float scalefactor = (entity.getTickyes() + tickDelta) * getScaleFactor(entity);
             if (scalefactor > 1) scalefactor = 1;
             scaleBottomAligned(matrices, scalefactor);
             renderTree(Blocks.MUSHROOM_STEM.getDefaultState(), Blocks.BROWN_MUSHROOM_BLOCK.getDefaultState(), BROWN_MUSHROOM, matrices, vertexConsumers, light, overlay);
@@ -446,13 +446,13 @@ public class JarBlockEntityRenderer extends BlockEntityRenderer<JarBlockEntity> 
         {
             matrices.translate(0, -0.5f, 0);
             scaleCenterAligned(matrices, 2f/3f, 2f/3f, 2f/3f);
-            float scalefactor = (entity.getTickyes() + tickDelta) * getScaleFactor();
+            float scalefactor = (entity.getTickyes() + tickDelta) * getScaleFactor(entity);
             if (scalefactor > 1) scalefactor = 1;
             scaleBottomAligned(matrices, scalefactor);
             MinecraftClient.getInstance().getBlockRenderManager().renderBlockAsEntity(entity.getPlant(), matrices, vertexConsumers, light, overlay);
         } else if (entity.getPlant().isOf(Blocks.SEAGRASS) || entity.getPlant().isOf(Blocks.KELP) || entity.getPlant().isOf(Blocks.SEA_PICKLE)) {
             matrices.translate(0, -0.5f, 0);
-            float scalefactor = (entity.getTickyes() + tickDelta) * getScaleFactor();
+            float scalefactor = (entity.getTickyes() + tickDelta) * getScaleFactor(entity);
             if (scalefactor > 1) scalefactor = 1;
             scaleBottomAligned(matrices, scalefactor);
             MinecraftClient.getInstance().getBlockRenderManager().renderBlockAsEntity(entity.getPlant(), matrices, vertexConsumers, light, overlay);
@@ -462,7 +462,7 @@ public class JarBlockEntityRenderer extends BlockEntityRenderer<JarBlockEntity> 
                 IBucketItem item = (IBucketItem)entity.getBaseItemStack().getItem();
                 matrices.translate(0d, item.libblockattributes__getFluidVolumeAmount().asInexactDouble(), 0d);
             }
-            float scalefactor = (entity.getTickyes() + tickDelta) * getScaleFactor();
+            float scalefactor = (entity.getTickyes() + tickDelta) * getScaleFactor(entity);
             if (scalefactor > 1) scalefactor = 1;
             scaleBottomAligned(matrices, scalefactor);
             MinecraftClient.getInstance().getBlockRenderManager().renderBlockAsEntity(entity.getPlant(), matrices, vertexConsumers, light, overlay);

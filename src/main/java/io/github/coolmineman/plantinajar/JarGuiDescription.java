@@ -27,7 +27,8 @@ public class JarGuiDescription extends SyncedGuiDescription {
         root.add(this.createPlayerInventoryPanel(), 0, 3);
 
         root.validate(this);
-    }
+	}
+	
 
     public static Inventory getBlockInventory1(ScreenHandlerContext ctx, int size) {
 		return getBlockInventory2(ctx, () -> new SimpleInventory(size));

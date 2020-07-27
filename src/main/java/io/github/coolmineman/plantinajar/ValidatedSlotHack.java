@@ -11,6 +11,18 @@ public class ValidatedSlotHack extends ValidatedSlot {
     }
 
     @Override
+    public boolean canInsert(ItemStack stack) {
+        if (inventory instanceof JarInventory) {
+            if (this.getInventoryIndex() == 0) {
+                if (GoodIdeaDetector.isGoodIdeaPlant(stack)) return super.canInsert(stack);
+            } else if (this.getInventoryIndex() == 1) {
+                if (GoodIdeaDetector.isGoodIdeaBase(stack)) return super.canInsert(stack);
+            }
+        }
+        return false;
+    }
+
+    @Override
     public int getMaxStackAmount() {
         return 1;
     }
