@@ -1,12 +1,12 @@
 package io.github.coolmineman.plantinajar;
 
 import alexiil.mc.lib.attributes.fluid.mixin.api.IBucketItem;
+import net.minecraft.block.AttachedStemBlock;
 import net.minecraft.block.BambooBlock;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.block.CactusBlock;
 import net.minecraft.block.CropBlock;
-import net.minecraft.block.GourdBlock;
 import net.minecraft.block.NetherWartBlock;
 import net.minecraft.block.SugarCaneBlock;
 import net.minecraft.item.BlockItem;
@@ -24,7 +24,7 @@ public class GoodIdeaDetector {
             return false;
         }
 
-        if (block.getBlock() instanceof GourdBlock) {
+        if (block.getBlock() instanceof AttachedStemBlock) {
             return true;
         }
         if (block.isOf(Blocks.CHORUS_FLOWER)) {
