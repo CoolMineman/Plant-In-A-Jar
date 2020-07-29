@@ -8,6 +8,7 @@ import net.minecraft.block.Blocks;
 import net.minecraft.block.CactusBlock;
 import net.minecraft.block.CropBlock;
 import net.minecraft.block.NetherWartBlock;
+import net.minecraft.block.PlantBlock;
 import net.minecraft.block.SugarCaneBlock;
 import net.minecraft.item.BlockItem;
 import net.minecraft.item.ItemStack;
@@ -24,7 +25,7 @@ public class GoodIdeaDetector {
             return false;
         }
 
-        if (block.getBlock() instanceof AttachedStemBlock) {
+        if (block.getBlock() instanceof PlantBlock) {
             return true;
         }
         if (block.isOf(Blocks.CHORUS_FLOWER)) {
