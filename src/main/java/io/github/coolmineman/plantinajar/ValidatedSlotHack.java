@@ -12,14 +12,22 @@ public class ValidatedSlotHack extends ValidatedSlot {
 
     @Override
     public boolean canInsert(ItemStack stack) {
-        if (inventory instanceof JarInventory) {
-            if (this.getInventoryIndex() == 0) {
-                if (GoodIdeaDetector.isGoodIdeaPlant(stack)) return super.canInsert(stack);
-            } else if (this.getInventoryIndex() == 1) {
-                if (GoodIdeaDetector.isGoodIdeaBase(stack)) return super.canInsert(stack);
+        if (this.getInventoryIndex() == 0) {
+            if (GoodIdeaDetector.isGoodIdeaPlant(stack)) {
+                return super.canInsert(stack);
+            } else {
+                return false;
             }
+        } else if (this.getInventoryIndex() == 1) {
+            if (GoodIdeaDetector.isGoodIdeaBase(stack)) {
+                return super.canInsert(stack);
+            } else {
+                return false;
+            }
+        } else {
+            System.out.println(this.getInventoryIndex());
+            return false;
         }
-        return false;
     }
 
     @Override

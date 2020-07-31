@@ -37,6 +37,7 @@ import net.minecraft.screen.NamedScreenHandlerFactory;
 import net.minecraft.screen.ScreenHandler;
 import net.minecraft.screen.ScreenHandlerContext;
 import net.minecraft.server.world.ServerWorld;
+import net.minecraft.tag.BlockTags;
 import net.minecraft.text.Text;
 import net.minecraft.text.TranslatableText;
 import net.minecraft.util.Tickable;
@@ -156,6 +157,9 @@ public class JarBlockEntity extends BlockEntity implements Tickable, NamedScreen
         BlockState plant = getRawPlant();
         BlockState base = getBase();
 
+        if (getPlant().getBlock().isIn(BlockTags.FLOWERS)) {
+            return !getBase().isAir() && !getBase().isOf(Blocks.JUNGLE_LOG) && !(getBaseItemStack().getItem() instanceof IBucketItem);
+        }
         if (getPlant().getBlock() instanceof GourdBlock) {
             return getBase().isOf(Blocks.FARMLAND);
         }

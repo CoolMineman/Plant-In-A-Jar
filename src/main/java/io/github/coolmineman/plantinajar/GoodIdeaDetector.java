@@ -12,6 +12,7 @@ import net.minecraft.block.PlantBlock;
 import net.minecraft.block.SugarCaneBlock;
 import net.minecraft.item.BlockItem;
 import net.minecraft.item.ItemStack;
+import net.minecraft.tag.BlockTags;
 import net.minecraft.util.math.Direction;
 
 public class GoodIdeaDetector {
@@ -25,6 +26,9 @@ public class GoodIdeaDetector {
             return false;
         }
 
+        if (block.getBlock().isIn(BlockTags.FLOWERS)) {
+            return true;
+        }
         if (block.getBlock() instanceof PlantBlock) {
             return true;
         }

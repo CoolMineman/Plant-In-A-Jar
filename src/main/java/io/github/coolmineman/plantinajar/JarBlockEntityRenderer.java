@@ -16,11 +16,14 @@ import net.minecraft.block.CactusBlock;
 import net.minecraft.block.ConnectingBlock;
 import net.minecraft.block.GourdBlock;
 import net.minecraft.block.SugarCaneBlock;
+import net.minecraft.block.TallPlantBlock;
+import net.minecraft.block.enums.DoubleBlockHalf;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.render.VertexConsumerProvider;
 import net.minecraft.client.render.block.entity.BlockEntityRenderDispatcher;
 import net.minecraft.client.render.block.entity.BlockEntityRenderer;
 import net.minecraft.client.util.math.MatrixStack;
+import net.minecraft.tag.BlockTags;
 import net.minecraft.util.math.Direction;
 
 public class JarBlockEntityRenderer extends BlockEntityRenderer<JarBlockEntity> {
@@ -413,6 +416,21 @@ public class JarBlockEntityRenderer extends BlockEntityRenderer<JarBlockEntity> 
             if (scalefactor > 1) scalefactor = 1;
             scaleBottomAligned(matrices, scalefactor);
             renderTree(JarBlockEntity.getTreeBlockWood(entity.getPlant()), JarBlockEntity.getTreeBlockLeaf(entity.getPlant()), tree, matrices, vertexConsumers, light, overlay);
+        } else if (entity.getPlant().isIn(BlockTags.FLOWERS)) {
+            matrices.translate(0, -0.5f, 0);
+            if (entity.getPlant().getBlock() instanceof TallPlantBlock) {
+                float scalefactor = (entity.getTickyes() + tickDelta) * getScaleFactor(entity) * 0.5f;
+                if (scalefactor > 1) scalefactor = 1;
+                scaleBottomAligned(matrices, scalefactor);
+                MinecraftClient.getInstance().getBlockRenderManager().renderBlockAsEntity(entity.getPlant(), matrices, vertexConsumers, light, overlay);
+                matrices.translate(0, 1, 0);
+                MinecraftClient.getInstance().getBlockRenderManager().renderBlockAsEntity(entity.getPlant().with(TallPlantBlock.HALF, DoubleBlockHalf.UPPER), matrices, vertexConsumers, light, overlay);
+            } else {
+                float scalefactor = (entity.getTickyes() + tickDelta) * getScaleFactor(entity);
+                if (scalefactor > 1) scalefactor = 1;
+                scaleBottomAligned(matrices, scalefactor);
+                MinecraftClient.getInstance().getBlockRenderManager().renderBlockAsEntity(entity.getPlant(), matrices, vertexConsumers, light, overlay);
+            }
         } else if (entity.getPlant().isOf(Blocks.COCOA)) {
             matrices.translate(0f, -.5f, 0.25f);
             scaleBottomAligned(matrices, .5f);
