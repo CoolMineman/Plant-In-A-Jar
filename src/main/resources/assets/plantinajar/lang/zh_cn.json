@@ -1,6 +1,6 @@
 {
     "block.plantinajar.plant_jar": "植物温罐",
-    "text.autoconfig.plantinajar.title": "植物温罐配置",
+    "text.autoconfig.plantinajar.title": "植物温罐配置 (Plant In A Jar)",
     "text.autoconfig.plantinajar.option.dropItems": "是否开启产出",
     "text.autoconfig.plantinajar.option.growthTime": "成熟周期（秒）"
 }
