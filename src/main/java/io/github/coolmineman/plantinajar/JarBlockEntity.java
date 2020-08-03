@@ -114,6 +114,9 @@ public class JarBlockEntity extends BlockEntity implements Tickable, NamedScreen
                         if ((getPlant().isOf(Blocks.CRIMSON_FUNGUS) || getPlant().isOf(Blocks.WARPED_FUNGUS)) && ThreadLocalRandom.current().nextInt(0, 99) < 20) {
                             output.addStack(Blocks.SHROOMLIGHT.getDefaultState().getDroppedStacks((new LootContext.Builder((ServerWorld)getWorld())).random(world.random).parameter(LootContextParameters.POSITION, pos).parameter(LootContextParameters.TOOL, ItemStack.EMPTY)).get(0));
                         }
+                        for (ItemStack i : CompatManager.getExtraDrops(inventory.getStack(0))) {
+                            output.addStack(i);
+                        }
                     }
                     hasOutputed = true;
                 }

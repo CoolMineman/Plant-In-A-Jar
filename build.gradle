@@ -36,6 +36,10 @@ repositories {
 		name = "No"
 		url 'https://jitpack.io'
 	}
+	maven {
+		name = "ojmuss"
+		url = "http://maven.modmuss50.me"
+	}
 	jcenter()
 }
 
@@ -63,6 +67,7 @@ dependencies {
 	modImplementation "io.github.prospector:modmenu:${project.badmenu_version}"
 
 	modImplementation "com.github.TerraformersMC:Terrestria:v2.0.4"
+	modImplementation "TechReborn:TechReborn-1.16:3.4.5+build.88"
 
 	// PSA: Some older mods, compiled on Loom 0.2.1, might have outdated Maven POMs.
 	// You may need to force-disable transitiveness on them.

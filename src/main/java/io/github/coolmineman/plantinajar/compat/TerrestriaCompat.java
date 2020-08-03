@@ -1,17 +1,22 @@
 package io.github.coolmineman.plantinajar.compat;
 
 import com.terraformersmc.terrestria.init.TerrestriaBlocks;
+
+import java.util.Collections;
+import java.util.List;
+
 import com.terraformersmc.terraform.block.BareSmallLogBlock;
-import com.terraformersmc.terraform.block.SmallLogBlock;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
+import net.minecraft.item.ItemStack;
 
 public class TerrestriaCompat implements Compat {
 
     @Override
     public BlockState getTreeBlockWood(BlockState sappling) {
         if (sappling.isOf(TerrestriaBlocks.BRYCE_SAPLING)) {
-            return TerrestriaBlocks.SMALL_OAK_LOG.getDefaultState().with(BareSmallLogBlock.UP, true).with(BareSmallLogBlock.DOWN, true);
+            return TerrestriaBlocks.SMALL_OAK_LOG.getDefaultState().with(BareSmallLogBlock.UP, true)
+                    .with(BareSmallLogBlock.DOWN, true);
         }
         if (sappling.isOf(TerrestriaBlocks.REDWOOD_SAPLING)) {
             return TerrestriaBlocks.REDWOOD.log.getDefaultState();
@@ -41,17 +46,19 @@ public class TerrestriaCompat implements Compat {
             return TerrestriaBlocks.RAINBOW_EUCALYPTUS.log.getDefaultState();
         }
         if (sappling.isOf(TerrestriaBlocks.SAKURA_SAPLING)) {
-            return TerrestriaBlocks.SAKURA.log.getDefaultState().with(BareSmallLogBlock.UP, true).with(BareSmallLogBlock.DOWN, true);
+            return TerrestriaBlocks.SAKURA.log.getDefaultState().with(BareSmallLogBlock.UP, true)
+                    .with(BareSmallLogBlock.DOWN, true);
         }
         if (sappling.isOf(TerrestriaBlocks.JUNGLE_PALM_SAPLING)) {
             return Blocks.JUNGLE_LOG.getDefaultState();
         }
-        //todo ~~What is this?~~ add support?
+        // todo ~~What is this?~~ add support?
         // if (sappling.isOf(TerrestriaBlocks.SAGUARO_CACTUS_SAPLING)) {
-        //     return null;
+        // return null;
         // }
         if (sappling.isOf(TerrestriaBlocks.YUCCA_PALM_SAPLING)) {
-            return TerrestriaBlocks.YUCCA_PALM.log.getDefaultState().with(BareSmallLogBlock.UP, true).with(BareSmallLogBlock.DOWN, true);
+            return TerrestriaBlocks.YUCCA_PALM.log.getDefaultState().with(BareSmallLogBlock.UP, true)
+                    .with(BareSmallLogBlock.DOWN, true);
         }
         return null;
     }
@@ -94,14 +101,19 @@ public class TerrestriaCompat implements Compat {
         if (sappling.isOf(TerrestriaBlocks.JUNGLE_PALM_SAPLING)) {
             return Blocks.JUNGLE_LEAVES.getDefaultState();
         }
-        //todo ~~What is this?~~ se above
+        // todo ~~What is this?~~ se above
         // if (sappling.isOf(TerrestriaBlocks.SAGUARO_CACTUS_SAPLING)) {
-        //     return null;
+        // return null;
         // }
         if (sappling.isOf(TerrestriaBlocks.YUCCA_PALM_SAPLING)) {
             return TerrestriaBlocks.YUCCA_PALM.leaves.getDefaultState();
         }
         return null;
+    }
+
+    @Override
+    public List<ItemStack> getExtraDrops(ItemStack plant) {
+        return Collections.emptyList();
     }
     
 }
