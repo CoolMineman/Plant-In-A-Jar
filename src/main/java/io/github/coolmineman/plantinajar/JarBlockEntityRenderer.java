@@ -6,6 +6,8 @@ import java.util.List;
 
 import alexiil.mc.lib.attributes.fluid.amount.FluidAmount;
 import alexiil.mc.lib.attributes.fluid.mixin.api.IBucketItem;
+import alexiil.mc.lib.attributes.fluid.volume.BiomeSourcedFluidKey;
+import alexiil.mc.lib.attributes.fluid.volume.FluidKey;
 import alexiil.mc.lib.attributes.fluid.volume.FluidKeys;
 import alexiil.mc.lib.attributes.fluid.volume.FluidVolume;
 import alexiil.mc.lib.attributes.fluid.render.FluidRenderFace;
@@ -17,8 +19,10 @@ import net.minecraft.block.ConnectingBlock;
 import net.minecraft.block.GourdBlock;
 import net.minecraft.block.SugarCaneBlock;
 import net.minecraft.block.TallPlantBlock;
+import net.minecraft.block.VineBlock;
 import net.minecraft.block.enums.DoubleBlockHalf;
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.color.world.BiomeColors;
 import net.minecraft.client.render.VertexConsumerProvider;
 import net.minecraft.client.render.block.entity.BlockEntityRenderDispatcher;
 import net.minecraft.client.render.block.entity.BlockEntityRenderer;
@@ -380,7 +384,19 @@ public class JarBlockEntityRenderer extends BlockEntityRenderer<JarBlockEntity> 
         matrices.push();
         BlockState base = entity.getBase();
         matrices.translate(0d, 1d/32d, 0d);
-        if (base.isOf(Blocks.JUNGLE_LOG)) {
+        if (entity.getPlant().getBlock() instanceof VineBlock) {
+            matrices.translate(0d, 1d/32d, 0d);
+            scaleCenterAligned(matrices, 0.999f, 1f, 0.999f);
+            matrices.translate(0f, -.5f + 1f/3f, 1f/3f);
+            scaleBottomAligned(matrices, 1f/3f);
+            MinecraftClient.getInstance().getBlockRenderManager().renderBlockAsEntity(base, matrices, vertexConsumers, light, overlay);
+        } else if (entity.getPlant().isOf(Blocks.WEEPING_VINES_PLANT)) {
+            matrices.translate(0d, -1d/32d, 0d);
+            scaleCenterAligned(matrices, 0.999f, 1f, 0.999f);
+            matrices.translate(0f, -.5f + 2f/3f, 0f);
+            scaleBottomAligned(matrices, 1f/3f);
+            MinecraftClient.getInstance().getBlockRenderManager().renderBlockAsEntity(base, matrices, vertexConsumers, light, overlay);
+        } else if (base.isOf(Blocks.JUNGLE_LOG)) {
             matrices.translate(0d, 1d/32d, 0d);
             scaleCenterAligned(matrices, 0.999f, 1f, 0.999f);
             matrices.translate(0f, -.5f, -0.25f);
@@ -431,6 +447,28 @@ public class JarBlockEntityRenderer extends BlockEntityRenderer<JarBlockEntity> 
                 scaleBottomAligned(matrices, scalefactor);
                 MinecraftClient.getInstance().getBlockRenderManager().renderBlockAsEntity(entity.getPlant(), matrices, vertexConsumers, light, overlay);
             }
+        } else if (entity.getPlant().getBlock() instanceof VineBlock) {
+            matrices.translate(0f, -.5f, 0f);
+            scaleBottomAligned(matrices, 1f/3f);
+            matrices.translate(0f, 1f, 0f);
+            MinecraftClient.getInstance().getBlockRenderManager().renderBlockAsEntity(entity.getPlant(), matrices, vertexConsumers, light, overlay);
+            matrices.translate(0f, -1f, 0f);
+            float scalefactor = (entity.getTickyes() + tickDelta) * getScaleFactor(entity);
+            if (scalefactor > 1) scalefactor = 1;
+            matrices.translate(scalefactor * -.5f + 0.5f, scalefactor * -1f + 1f, 0f);
+            matrices.scale(scalefactor, scalefactor, 1f);
+            MinecraftClient.getInstance().getBlockRenderManager().renderBlockAsEntity(entity.getPlant(), matrices, vertexConsumers, light, overlay);
+        } else if (entity.getPlant().isOf(Blocks.WEEPING_VINES_PLANT)) {
+            matrices.translate(0f, -0.5f, 0f);
+            scaleBottomAligned(matrices, 1f/3f);
+            float scalefactor = (entity.getTickyes() + tickDelta) * getScaleFactor(entity);
+            if (scalefactor > 1) scalefactor = 1;
+            matrices.translate(scalefactor * -.5f + .5f, scalefactor * -2f + 1.75f + 1f/16f, scalefactor * -.5f + .5f);
+            matrices.scale(scalefactor, scalefactor, scalefactor);
+            matrices.translate(0f, 1f, 0f);
+            MinecraftClient.getInstance().getBlockRenderManager().renderBlockAsEntity(entity.getPlant(), matrices, vertexConsumers, light, overlay);
+            matrices.translate(0f, -1f, 0f);
+            MinecraftClient.getInstance().getBlockRenderManager().renderBlockAsEntity(Blocks.WEEPING_VINES.getDefaultState(), matrices, vertexConsumers, light, overlay);
         } else if (entity.getPlant().isOf(Blocks.COCOA)) {
             matrices.translate(0f, -.5f, 0.25f);
             scaleBottomAligned(matrices, .5f);
@@ -459,7 +497,8 @@ public class JarBlockEntityRenderer extends BlockEntityRenderer<JarBlockEntity> 
         } else if (entity.getPlant().getBlock() instanceof GourdBlock || 
                 entity.getPlant().getBlock() instanceof CactusBlock || 
                 entity.getPlant().getBlock() instanceof BambooBlock || 
-                entity.getPlant().getBlock() instanceof SugarCaneBlock
+                entity.getPlant().getBlock() instanceof SugarCaneBlock ||
+                entity.getPlant().isOf(Blocks.TWISTING_VINES_PLANT)
             )
         {
             matrices.translate(0, -0.5f, 0);
@@ -467,7 +506,8 @@ public class JarBlockEntityRenderer extends BlockEntityRenderer<JarBlockEntity> 
             float scalefactor = (entity.getTickyes() + tickDelta) * getScaleFactor(entity);
             if (scalefactor > 1) scalefactor = 1;
             scaleBottomAligned(matrices, scalefactor);
-            MinecraftClient.getInstance().getBlockRenderManager().renderBlockAsEntity(entity.getPlant(), matrices, vertexConsumers, light, overlay);
+            BlockState plant = entity.getPlant().isOf(Blocks.TWISTING_VINES_PLANT) ? Blocks.TWISTING_VINES.getDefaultState() : entity.getPlant();
+            MinecraftClient.getInstance().getBlockRenderManager().renderBlockAsEntity(plant, matrices, vertexConsumers, light, overlay);
         } else if (entity.getPlant().isOf(Blocks.SEAGRASS) || entity.getPlant().isOf(Blocks.KELP) || entity.getPlant().isOf(Blocks.SEA_PICKLE)) {
             matrices.translate(0, -0.5f, 0);
             float scalefactor = (entity.getTickyes() + tickDelta) * getScaleFactor(entity);

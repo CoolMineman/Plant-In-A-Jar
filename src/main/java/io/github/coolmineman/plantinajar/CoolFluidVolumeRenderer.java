@@ -12,7 +12,7 @@ import net.minecraft.client.texture.Sprite;
 import net.minecraft.client.util.math.MatrixStack;
 
 public class CoolFluidVolumeRenderer extends DefaultFluidVolumeRenderer {
-    public static final DefaultFluidVolumeRenderer INSTANCE = new CoolFluidVolumeRenderer();
+    public static final CoolFluidVolumeRenderer INSTANCE = new CoolFluidVolumeRenderer();
     
     @Override
     public void render(

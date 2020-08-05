@@ -7,6 +7,7 @@ import io.github.coolmineman.plantinajar.mixin.PlantBlockAccess;
 import io.netty.util.internal.ThreadLocalRandom;
 import net.fabricmc.fabric.api.block.entity.BlockEntityClientSerializable;
 import net.minecraft.block.BambooBlock;
+import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.block.CactusBlock;
@@ -20,6 +21,8 @@ import net.minecraft.block.NetherWartBlock;
 import net.minecraft.block.SaplingBlock;
 import net.minecraft.block.StemBlock;
 import net.minecraft.block.SugarCaneBlock;
+import net.minecraft.block.SweetBerryBushBlock;
+import net.minecraft.block.VineBlock;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.block.entity.HopperBlockEntity;
 import net.minecraft.entity.player.PlayerEntity;
@@ -106,6 +109,8 @@ public class JarBlockEntity extends BlockEntity implements Tickable, NamedScreen
                             }
                         } else if (getPlant().isOf(Blocks.SEAGRASS)) {
                             output.addStack(new ItemStack(Items.SEAGRASS));
+                        } else if (getPlant().isOf(Blocks.VINE)) {
+                            output.addStack(new ItemStack(Items.VINE));
                         } else {
                             for (ItemStack stack : getPlant().getDroppedStacks((new LootContext.Builder((ServerWorld)getWorld())).random(world.random).parameter(LootContextParameters.POSITION, pos).parameter(LootContextParameters.TOOL, ItemStack.EMPTY))) {
                                 output.addStack(stack);
@@ -182,13 +187,15 @@ public class JarBlockEntity extends BlockEntity implements Tickable, NamedScreen
             double a = item.libblockattributes__getFluidVolumeAmount().asInexactDouble();
             return 0.8d > a && a > 0.2d;
         }
-        if (plant.getBlock() instanceof CropBlock || plant.getBlock() instanceof NetherWartBlock) {
+        if (plant.getBlock() instanceof CropBlock || plant.getBlock() instanceof NetherWartBlock || plant.getBlock() instanceof SweetBerryBushBlock) {
             try {
                 return ((PlantBlockAccess)plant.getBlock()).callCanPlantOnTop(base, null, null);
             } catch (Exception e) {
                 System.out.println("Epic Hacky Code Failed Scream At ThatTrollzer in the Fabric Discord If You See This");
                 e.printStackTrace();
             }
+        } else if (getPlant().getBlock() instanceof VineBlock || getPlant().isOf(Blocks.WEEPING_VINES_PLANT) || getPlant().isOf(Blocks.TWISTING_VINES_PLANT)) {
+            return !getBase().isAir() && !(getBaseItemStack().getItem() instanceof IBucketItem);
         } else if (isTree(plant) ||
                     getPlant().getBlock() instanceof CactusBlock || 
                     getPlant().getBlock() instanceof BambooBlock || 
@@ -220,12 +227,25 @@ public class JarBlockEntity extends BlockEntity implements Tickable, NamedScreen
             if (age > maxAge) age = maxAge;
             return c.getDefaultState().with(NetherWartBlock.AGE, age);
         }
+        if (rawState.getBlock() instanceof SweetBerryBushBlock) {
+            SweetBerryBushBlock c = ((SweetBerryBushBlock)rawState.getBlock());
+            int maxAge = SweetBerryBushBlock.AGE.getValues().size() - 1;
+            int age = (int) ( ((float)tickyes) / ((float)getGrowthTime() ) * (maxAge + 1));
+            if (age > maxAge) age = maxAge;
+            return c.getDefaultState().with(SweetBerryBushBlock.AGE, age);
+        }
         if (rawState.isOf(Blocks.COCOA)) {
             CocoaBlock c = ((CocoaBlock)rawState.getBlock());
             int maxAge = CocoaBlock.AGE.getValues().size() - 1;
             int age = (int) ( ((float)tickyes) / ((float)getGrowthTime() ) * (maxAge + 1));
             if (age > maxAge) age = maxAge;
             return c.getDefaultState().with(CocoaBlock.AGE, age);
+        }
+        if (rawState.isOf(Blocks.WEEPING_VINES)) {
+            return Blocks.WEEPING_VINES_PLANT.getDefaultState();
+        }
+        if (rawState.isOf(Blocks.TWISTING_VINES)) {
+            return Blocks.TWISTING_VINES_PLANT.getDefaultState();
         }
         
         return rawState;

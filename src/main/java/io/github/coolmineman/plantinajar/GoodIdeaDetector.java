@@ -10,8 +10,10 @@ import net.minecraft.block.CropBlock;
 import net.minecraft.block.NetherWartBlock;
 import net.minecraft.block.PlantBlock;
 import net.minecraft.block.SugarCaneBlock;
+import net.minecraft.block.VineBlock;
 import net.minecraft.item.BlockItem;
 import net.minecraft.item.ItemStack;
+import net.minecraft.item.Items;
 import net.minecraft.tag.BlockTags;
 import net.minecraft.util.math.Direction;
 
@@ -26,6 +28,12 @@ public class GoodIdeaDetector {
             return false;
         }
 
+        if (block.getBlock() instanceof VineBlock) {
+            return true;
+        }
+        if (i.getItem().equals(Items.WEEPING_VINES) || i.getItem().equals(Items.TWISTING_VINES)) {
+            return true;
+        }
         if (block.getBlock().isIn(BlockTags.FLOWERS)) {
             return true;
         }
