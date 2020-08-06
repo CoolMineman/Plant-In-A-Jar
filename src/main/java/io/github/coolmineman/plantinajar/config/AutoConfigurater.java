@@ -17,6 +17,8 @@ public class AutoConfigurater implements ConfigData {
     int growthTime = 10;
     @ConfigEntry.Gui.Excluded
     HashMap<String, Integer> perItemGrowthTimes = new HashMap<>();
+    @ConfigEntry.Gui.Excluded
+    HashMap<String, Integer> growthModifierRegexPatterns = new HashMap<>();
 
     public boolean shouldDropItems() {
         return this.dropItems;
@@ -30,7 +32,17 @@ public class AutoConfigurater implements ConfigData {
         }
         Integer perItemGrowthTime = perItemGrowthTimes.computeIfAbsent(i.toString(), k -> -1);
         if (needsResave) ((ConfigManager)AutoConfig.getConfigHolder(AutoConfigurater.class)).save();
-        return perItemGrowthTime <= 0 ? growthTime : perItemGrowthTime;
+        int result = perItemGrowthTime;
+        if (result <= 0) result = growthTime;
+        result += RegexComputation.getGrowthModifier(i.toString());
+        if (result <= 0) return 1;
+        return result;
+    }
+
+    @Override
+    public void validatePostLoad() throws ValidationException {
+        ConfigData.super.validatePostLoad();
+        RegexComputation.init(growthModifierRegexPatterns);
     }
 
 }
