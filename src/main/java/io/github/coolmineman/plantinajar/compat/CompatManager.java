@@ -2,13 +2,14 @@ package io.github.coolmineman.plantinajar.compat;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.block.BlockState;
 import net.minecraft.item.ItemStack;
 
 public class CompatManager {
-    private static ArrayList<Compat> compats = new ArrayList<>();
+    private static final List<Compat> compats = new ArrayList<>();
 
     public static void init() {
         if (FabricLoader.getInstance().isModLoaded("terrestria")) {
@@ -16,6 +17,12 @@ public class CompatManager {
         }
         if (FabricLoader.getInstance().isModLoaded("techreborn")) {
             compats.add(new TechRebornCompat());
+        }
+        if (FabricLoader.getInstance().isModLoaded("cinderscapes")) {
+            compats.add(new CinderscapesCompat());
+        }
+        if (FabricLoader.getInstance().isModLoaded("traverse")) {
+            compats.add(new TraverseCompat());
         }
     }
 
@@ -44,6 +51,14 @@ public class CompatManager {
         }
         return result;
     }  
+
+    public static Optional<Boolean> isTree(BlockState plant) {
+        for (Compat c : compats) {
+            Optional<Boolean> b = c.isTree(plant);
+            if (b.isPresent()) return b;
+        }
+        return Optional.empty();
+    }
 
     private CompatManager(){}
 }

@@ -4,6 +4,7 @@ import com.terraformersmc.terrestria.init.TerrestriaBlocks;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 
 import com.terraformersmc.terraform.block.BareSmallLogBlock;
 import net.minecraft.block.BlockState;
@@ -114,6 +115,11 @@ public class TerrestriaCompat implements Compat {
     @Override
     public List<ItemStack> getExtraDrops(ItemStack plant) {
         return Collections.emptyList();
+    }
+
+    @Override
+    public Optional<Boolean> isTree(BlockState plant) {
+        return Optional.empty();
     }
     
 }

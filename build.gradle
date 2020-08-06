@@ -33,12 +33,12 @@ repositories {
         url = 'https://dl.bintray.com/earthcomputer/mods'
     }
 	maven {
-		name = "No"
-		url 'https://jitpack.io'
-	}
-	maven {
 		name = "ojmuss"
 		url = "http://maven.modmuss50.me"
+	}
+	maven {
+		name = "No"
+		url 'https://jitpack.io'
 	}
 	jcenter()
 }
@@ -66,7 +66,9 @@ dependencies {
 
 	modImplementation "io.github.prospector:modmenu:${project.badmenu_version}"
 
-	modImplementation "com.github.TerraformersMC:Terrestria:v2.0.4"
+	modImplementation "com.terraformersmc:terrestria:2.0.4+build.50"
+	modImplementation "com.terraformersmc:cinderscapes:1.0.7+build.44-1.16.1"
+	modImplementation "com.terraformersmc:traverse:2.2.14+build.28"
 	modImplementation "TechReborn:TechReborn-1.16:3.4.5+build.88"
 
 	// PSA: Some older mods, compiled on Loom 0.2.1, might have outdated Maven POMs.

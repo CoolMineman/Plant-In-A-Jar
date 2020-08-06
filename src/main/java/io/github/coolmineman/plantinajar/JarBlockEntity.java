@@ -260,7 +260,7 @@ public class JarBlockEntity extends BlockEntity implements Tickable, NamedScreen
     }
 
     public static boolean isTree(BlockState plant) {
-        return plant.getBlock() instanceof SaplingBlock || plant.isOf(Blocks.CRIMSON_FUNGUS) || plant.isOf(Blocks.WARPED_FUNGUS);
+        return CompatManager.isTree(plant).orElse(plant.getBlock() instanceof SaplingBlock || plant.isOf(Blocks.CRIMSON_FUNGUS) || plant.isOf(Blocks.WARPED_FUNGUS));
     }
 
     public static BlockState getTreeBlockWood(BlockState sappling) {
