@@ -17,6 +17,8 @@ import net.minecraft.block.Blocks;
 import net.minecraft.block.CactusBlock;
 import net.minecraft.block.ConnectingBlock;
 import net.minecraft.block.GourdBlock;
+import net.minecraft.block.RootsBlock;
+import net.minecraft.block.SproutsBlock;
 import net.minecraft.block.SugarCaneBlock;
 import net.minecraft.block.TallPlantBlock;
 import net.minecraft.block.VineBlock;
@@ -498,7 +500,9 @@ public class JarBlockEntityRenderer extends BlockEntityRenderer<JarBlockEntity> 
                 entity.getPlant().getBlock() instanceof CactusBlock || 
                 entity.getPlant().getBlock() instanceof BambooBlock || 
                 entity.getPlant().getBlock() instanceof SugarCaneBlock ||
-                entity.getPlant().isOf(Blocks.TWISTING_VINES_PLANT)
+                entity.getPlant().isOf(Blocks.TWISTING_VINES_PLANT) ||
+                entity.getPlant().getBlock() instanceof SproutsBlock ||
+                entity.getPlant().getBlock() instanceof RootsBlock
             )
         {
             matrices.translate(0, -0.5f, 0);

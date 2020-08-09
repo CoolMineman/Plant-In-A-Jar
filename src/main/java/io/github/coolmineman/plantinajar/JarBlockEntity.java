@@ -18,7 +18,9 @@ import net.minecraft.block.FluidBlock;
 import net.minecraft.block.GourdBlock;
 import net.minecraft.block.InventoryProvider;
 import net.minecraft.block.NetherWartBlock;
+import net.minecraft.block.RootsBlock;
 import net.minecraft.block.SaplingBlock;
+import net.minecraft.block.SproutsBlock;
 import net.minecraft.block.StemBlock;
 import net.minecraft.block.SugarCaneBlock;
 import net.minecraft.block.SweetBerryBushBlock;
@@ -111,6 +113,8 @@ public class JarBlockEntity extends BlockEntity implements Tickable, NamedScreen
                             output.addStack(new ItemStack(Items.SEAGRASS));
                         } else if (getPlant().isOf(Blocks.VINE)) {
                             output.addStack(new ItemStack(Items.VINE));
+                        } else if (getPlant().isOf(Blocks.NETHER_SPROUTS)) {
+                            output.addStack(new ItemStack(Items.NETHER_SPROUTS));
                         } else {
                             for (ItemStack stack : getPlant().getDroppedStacks((new LootContext.Builder((ServerWorld)getWorld())).random(world.random).parameter(LootContextParameters.POSITION, pos).parameter(LootContextParameters.TOOL, ItemStack.EMPTY))) {
                                 output.addStack(stack);
@@ -201,7 +205,9 @@ public class JarBlockEntity extends BlockEntity implements Tickable, NamedScreen
                     getPlant().getBlock() instanceof BambooBlock || 
                     getPlant().getBlock() instanceof SugarCaneBlock ||
                     getPlant().isOf(Blocks.RED_MUSHROOM) ||
-                    getPlant().isOf(Blocks.BROWN_MUSHROOM)
+                    getPlant().isOf(Blocks.BROWN_MUSHROOM) ||
+                    getPlant().getBlock() instanceof SproutsBlock ||
+                    getPlant().getBlock() instanceof RootsBlock
                 ) {
             return !getBase().isAir() && !getBase().isOf(Blocks.JUNGLE_LOG) && !(getBaseItemStack().getItem() instanceof IBucketItem);
         }

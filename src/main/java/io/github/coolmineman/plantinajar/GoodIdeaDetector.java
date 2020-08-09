@@ -9,6 +9,8 @@ import net.minecraft.block.CactusBlock;
 import net.minecraft.block.CropBlock;
 import net.minecraft.block.NetherWartBlock;
 import net.minecraft.block.PlantBlock;
+import net.minecraft.block.RootsBlock;
+import net.minecraft.block.SproutsBlock;
 import net.minecraft.block.SugarCaneBlock;
 import net.minecraft.block.VineBlock;
 import net.minecraft.item.BlockItem;
@@ -60,7 +62,9 @@ public class GoodIdeaDetector {
                     block.getBlock() instanceof BambooBlock || 
                     block.getBlock() instanceof SugarCaneBlock ||
                     block.isOf(Blocks.RED_MUSHROOM) ||
-                    block.isOf(Blocks.BROWN_MUSHROOM)
+                    block.isOf(Blocks.BROWN_MUSHROOM) ||
+                    block.getBlock() instanceof SproutsBlock ||
+                    block.getBlock() instanceof RootsBlock
                 ) {
             return true;
         }
