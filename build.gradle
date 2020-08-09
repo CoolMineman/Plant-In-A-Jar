@@ -70,6 +70,7 @@ dependencies {
 	modImplementation "com.terraformersmc:cinderscapes:1.0.7+build.44-1.16.1"
 	modImplementation "com.terraformersmc:traverse:2.2.14+build.28"
 	modImplementation "TechReborn:TechReborn-1.16:3.4.5+build.88"
+	modImplementation "io.github.CorgiTaco:BYG:Fabric-1.16.X-SNAPSHOT"
 
 	// PSA: Some older mods, compiled on Loom 0.2.1, might have outdated Maven POMs.
 	// You may need to force-disable transitiveness on them.
