@@ -49,6 +49,7 @@ import net.minecraft.util.Tickable;
 import net.minecraft.util.collection.DefaultedList;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
+import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.registry.Registry;
 import net.minecraft.world.WorldAccess;
 
@@ -97,16 +98,16 @@ public class JarBlockEntity extends BlockEntity implements Tickable, NamedScreen
                 if (!world.isClient && !hasOutputed) {
                     if (PlantInAJar.CONFIG.shouldDropItems()) {
                         if (isTree(getPlant())) {
-                            for (ItemStack stack : getTreeBlockWood(getPlant()).getDroppedStacks((new LootContext.Builder((ServerWorld)getWorld())).random(world.random).parameter(LootContextParameters.POSITION, pos).parameter(LootContextParameters.TOOL, ItemStack.EMPTY))) {
+                            for (ItemStack stack : getTreeBlockWood(getPlant()).getDroppedStacks((new LootContext.Builder((ServerWorld)getWorld())).random(world.random).parameter(LootContextParameters.ORIGIN, Vec3d.ofCenter(pos)).parameter(LootContextParameters.TOOL, ItemStack.EMPTY))) {
                                 output.addStack(stack);
                             }
                             for (int i = 0; i < 5; i++) {
-                                for (ItemStack stack : getTreeBlockLeaf(getPlant()).getDroppedStacks((new LootContext.Builder((ServerWorld)getWorld())).random(world.random).parameter(LootContextParameters.POSITION, pos).parameter(LootContextParameters.TOOL, ItemStack.EMPTY))) {
+                                for (ItemStack stack : getTreeBlockLeaf(getPlant()).getDroppedStacks((new LootContext.Builder((ServerWorld)getWorld())).random(world.random).parameter(LootContextParameters.ORIGIN, Vec3d.ofCenter(pos)).parameter(LootContextParameters.TOOL, ItemStack.EMPTY))) {
                                     output.addStack(stack);
                                 }
                             }
                         } else if (getPlant().isOf(Blocks.CHORUS_FLOWER)) {
-                            for (ItemStack stack : Blocks.CHORUS_PLANT.getDefaultState().getDroppedStacks((new LootContext.Builder((ServerWorld)getWorld())).random(world.random).parameter(LootContextParameters.POSITION, pos).parameter(LootContextParameters.TOOL, ItemStack.EMPTY))) {
+                            for (ItemStack stack : Blocks.CHORUS_PLANT.getDefaultState().getDroppedStacks((new LootContext.Builder((ServerWorld)getWorld())).random(world.random).parameter(LootContextParameters.ORIGIN, Vec3d.ofCenter(pos)).parameter(LootContextParameters.TOOL, ItemStack.EMPTY))) {
                                 output.addStack(stack);
                             }
                         } else if (getPlant().isOf(Blocks.SEAGRASS)) {
@@ -116,12 +117,12 @@ public class JarBlockEntity extends BlockEntity implements Tickable, NamedScreen
                         } else if (getPlant().isOf(Blocks.NETHER_SPROUTS)) {
                             output.addStack(new ItemStack(Items.NETHER_SPROUTS));
                         } else {
-                            for (ItemStack stack : getPlant().getDroppedStacks((new LootContext.Builder((ServerWorld)getWorld())).random(world.random).parameter(LootContextParameters.POSITION, pos).parameter(LootContextParameters.TOOL, ItemStack.EMPTY))) {
+                            for (ItemStack stack : getPlant().getDroppedStacks((new LootContext.Builder((ServerWorld)getWorld())).random(world.random).parameter(LootContextParameters.ORIGIN, Vec3d.ofCenter(pos)).parameter(LootContextParameters.TOOL, ItemStack.EMPTY))) {
                                 output.addStack(stack);
                             }
                         }
                         if ((getPlant().isOf(Blocks.CRIMSON_FUNGUS) || getPlant().isOf(Blocks.WARPED_FUNGUS)) && ThreadLocalRandom.current().nextInt(0, 99) < 20) {
-                            output.addStack(Blocks.SHROOMLIGHT.getDefaultState().getDroppedStacks((new LootContext.Builder((ServerWorld)getWorld())).random(world.random).parameter(LootContextParameters.POSITION, pos).parameter(LootContextParameters.TOOL, ItemStack.EMPTY)).get(0));
+                            output.addStack(Blocks.SHROOMLIGHT.getDefaultState().getDroppedStacks((new LootContext.Builder((ServerWorld)getWorld())).random(world.random).parameter(LootContextParameters.ORIGIN, Vec3d.ofCenter(pos)).parameter(LootContextParameters.TOOL, ItemStack.EMPTY)).get(0));
                         }
                         for (ItemStack i : CompatManager.getExtraDrops(inventory.getStack(0))) {
                             output.addStack(i);

@@ -51,12 +51,12 @@ dependencies {
 
 	// Fabric API. This is technically optional, but you probably want it anyway.
 	modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
-	modImplementation "com.github.CoolMineman:LibGui:master-SNAPSHOT"
-	include "com.github.CoolMineman:LibGui:master-SNAPSHOT"
-	//modImplementation "io.github.cottonmc:LibGui:${project.libgui_version}"
-	//include "io.github.cottonmc:LibGui:${project.libgui_version}" 
-	modCompile "alexiil.mc.lib:libblockattributes-all:0.7.0"
-	include "alexiil.mc.lib:libblockattributes-all:0.7.0"
+	// modImplementation "com.github.CoolMineman:LibGui:master-SNAPSHOT"
+	// include "com.github.CoolMineman:LibGui:master-SNAPSHOT"
+	modImplementation "io.github.cottonmc:LibGui:${project.libgui_version}"
+	include "io.github.cottonmc:LibGui:${project.libgui_version}" 
+	modCompile "alexiil.mc.lib:libblockattributes-all:0.8.0-pre.18"
+	include "alexiil.mc.lib:libblockattributes-all:0.8.0-pre.18"
 
 	modImplementation "me.sargunvohra.mcmods:autoconfig1u:${project.autoconfig_version}"
 	include "me.sargunvohra.mcmods:autoconfig1u:${project.autoconfig_version}"

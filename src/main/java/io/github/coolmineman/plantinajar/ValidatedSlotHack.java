@@ -31,12 +31,12 @@ public class ValidatedSlotHack extends ValidatedSlot {
     }
 
     @Override
-    public int getMaxStackAmount() {
+    public int getMaxItemCount() {
         return 1;
     }
 
     @Override
-    public int getMaxStackAmount(ItemStack stack) {
+    public int getMaxItemCount(ItemStack stack) {
         return 1;
     }
     
