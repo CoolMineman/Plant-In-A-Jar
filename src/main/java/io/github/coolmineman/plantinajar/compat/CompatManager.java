@@ -72,6 +72,29 @@ public class CompatManager {
                 .addTree("byg:zelkova_sapling", "byg:zelkova_log", "byg:zelkova_leaves")
             );
         }
+        if (FabricLoader.getInstance().isModLoaded("ferroustry")) {
+            EasyCompat ferroustryCompat = new EasyCompat();
+            String[] materials = {
+                "copper",
+                "coal",
+                "gold",
+                "redstone",
+                "lead",
+                "lapis",
+                "tin",
+                "aluminum",
+                "iron",
+                "silver",
+                "diamond",
+                "emerald",
+                "quartz",
+                "bismuth"
+            };
+            for (String material : materials) {
+                ferroustryCompat.addTree("ferroustry:" + material + "_sapling", "ferroustry:" + material + "_log", "ferroustry:" + material + "_leaves");
+            }
+            compats.add(ferroustryCompat);
+        }
     }
 
     public static BlockState getTreeBlockWood(BlockState sappling) {
