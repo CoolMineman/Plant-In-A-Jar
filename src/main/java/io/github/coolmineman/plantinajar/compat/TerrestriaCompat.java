@@ -1,12 +1,12 @@
 package io.github.coolmineman.plantinajar.compat;
 
+import com.terraformersmc.terraform.wood.block.BareSmallLogBlock;
 import com.terraformersmc.terrestria.init.TerrestriaBlocks;
 
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
-import com.terraformersmc.terraform.block.BareSmallLogBlock;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.item.ItemStack;

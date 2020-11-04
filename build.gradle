@@ -66,9 +66,9 @@ dependencies {
 
 	modImplementation "io.github.prospector:modmenu:${project.badmenu_version}"
 
-	modImplementation "com.terraformersmc:terrestria:2.0.4+build.50"
-	modImplementation "com.terraformersmc:cinderscapes:1.0.7+build.44-1.16.1"
-	modImplementation "com.terraformersmc:traverse:2.2.14+build.28"
+	modImplementation "com.github.terraformersmc:terrestria:1.16.3-SNAPSHOT"
+	modImplementation "com.github.terraformersmc:cinderscapes:1.16.2-SNAPSHOT"
+	modImplementation "com.github.terraformersmc:traverse:1.16.3-SNAPSHOT"
 	modImplementation "TechReborn:TechReborn-1.16:3.4.5+build.88"
 	modImplementation "io.github.CorgiTaco:BYG:Fabric-1.16.X-SNAPSHOT"
 
