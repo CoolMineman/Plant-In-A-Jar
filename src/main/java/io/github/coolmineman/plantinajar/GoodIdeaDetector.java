@@ -1,7 +1,6 @@
 package io.github.coolmineman.plantinajar;
 
 import alexiil.mc.lib.attributes.fluid.mixin.api.IBucketItem;
-import net.minecraft.block.AttachedStemBlock;
 import net.minecraft.block.BambooBlock;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;

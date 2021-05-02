@@ -7,7 +7,6 @@ import io.github.coolmineman.plantinajar.mixin.PlantBlockAccess;
 import io.netty.util.internal.ThreadLocalRandom;
 import net.fabricmc.fabric.api.block.entity.BlockEntityClientSerializable;
 import net.minecraft.block.BambooBlock;
-import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.block.CactusBlock;
