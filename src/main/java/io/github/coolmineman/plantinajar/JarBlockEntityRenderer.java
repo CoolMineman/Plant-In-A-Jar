@@ -8,6 +8,7 @@ import alexiil.mc.lib.attributes.fluid.amount.FluidAmount;
 import alexiil.mc.lib.attributes.fluid.mixin.api.IBucketItem;
 import alexiil.mc.lib.attributes.fluid.volume.FluidKeys;
 import alexiil.mc.lib.attributes.fluid.volume.FluidVolume;
+import io.github.coolmineman.plantinajar.tree.TreeMan;
 import alexiil.mc.lib.attributes.fluid.render.FluidRenderFace;
 import net.minecraft.block.BambooBlock;
 import net.minecraft.block.BlockState;
@@ -16,6 +17,7 @@ import net.minecraft.block.CactusBlock;
 import net.minecraft.block.ConnectingBlock;
 import net.minecraft.block.GourdBlock;
 import net.minecraft.block.RootsBlock;
+import net.minecraft.block.SaplingBlock;
 import net.minecraft.block.SproutsBlock;
 import net.minecraft.block.SugarCaneBlock;
 import net.minecraft.block.TallPlantBlock;
@@ -368,6 +370,32 @@ public class JarBlockEntityRenderer extends BlockEntityRenderer<JarBlockEntity> 
         matrices.translate(offset, 0, offset);
     }
 
+    public void renderTreeNew(SaplingBlock sapling, JarBlockEntity entity, float tickDelta, MatrixStack matrices, VertexConsumerProvider vertexConsumers, int light, int overlay) {
+        BlockState[][][] tree = TreeMan.getTree(sapling);
+        float scale = 1f / (Math.max(tree.length, Math.max(tree[0].length, tree[0][0].length)) + 1);
+        matrices.translate(0, -0.5f, 0);
+        scaleCenterAligned(matrices, scale, scale, scale);
+        float scalefactor = (entity.getTickyes() + tickDelta) * getScaleFactor(entity);
+        if (scalefactor > 1) scalefactor = 1;
+        scaleBottomAligned(matrices, scalefactor);
+        int offsetx = (tree.length - 1) / 2;
+        int offsetz = (tree[0][0].length - 1) / 2;
+        matrices.translate(-offsetx, 0, -offsetz);
+        for (int i = 0; i < tree.length; i++) {
+            for (int j = 0; j < tree[i].length; j++) {
+                for (int k = 0; k < tree[i][j].length; k++) {
+                    BlockState bs = tree[i][j][k];
+                    if (bs != null) {
+                        matrices.translate(i, j, k);
+                        MinecraftClient.getInstance().getBlockRenderManager().renderBlockAsEntity(bs, matrices, vertexConsumers, light, overlay);
+                        matrices.translate(-i, -j, -k);
+                    }
+                }
+            }
+        }
+        matrices.translate(offsetx, 0, offsetz);
+    }
+
     public static void scaleCenterAligned(MatrixStack matrices, float x, float y, float z) {
         matrices.translate((1f-x) * .5, (1f-x) * .5, (1f-z) * .5);
         matrices.scale(x, y, z);
@@ -424,7 +452,9 @@ public class JarBlockEntityRenderer extends BlockEntityRenderer<JarBlockEntity> 
         matrices.push();
         matrices.translate(0d, 1d/16d, 0d);
         scaleCenterAligned(matrices, 0.999f, 0.999f, 0.999f);
-        if (JarBlockEntity.isTree(entity.getPlant())) {
+        if (entity.getPlant().getBlock() instanceof SaplingBlock) {
+            renderTreeNew((SaplingBlock)entity.getPlant().getBlock(), entity, tickDelta, matrices, vertexConsumers, light, overlay);
+        } else if (JarBlockEntity.isTree(entity.getPlant())) {
             matrices.translate(0, -0.5f, 0);
             scaleCenterAligned(matrices, 1f/7f, 1f/7f, 1f/7f);
             float scalefactor = (entity.getTickyes() + tickDelta) * getScaleFactor(entity);

@@ -3,6 +3,7 @@ package io.github.coolmineman.plantinajar.fake;
 import org.objenesis.ObjenesisStd;
 import org.objenesis.instantiator.ObjectInstantiator;
 
+import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
@@ -35,6 +36,10 @@ public class FakeServerWorld extends ServerWorld {
         fakeServerTickScheduler = new FakeServerTickScheduler(this);
     }
 
+    public Long2ObjectMap<BlockState> getBackingMap() {
+        return states;
+    }
+
     @Override
     public ServerChunkManager getChunkManager() {
         return chunkManager;
@@ -52,7 +57,11 @@ public class FakeServerWorld extends ServerWorld {
 
     @Override
     public boolean setBlockState(BlockPos pos, BlockState state, int flags, int maxUpdateDepth) {
-        states.put(pos.asLong(), state);
+        if (state.isAir()) {
+            states.remove(pos.asLong());
+        } else {
+            states.put(pos.asLong(), state);
+        }
         return true;
     }
     
