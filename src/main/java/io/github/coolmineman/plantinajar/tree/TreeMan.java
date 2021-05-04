@@ -47,7 +47,6 @@ public class TreeMan {
     }
 
     private static void initTree(FakeServerWorld world, SaplingBlock block, Random random) {
-        DarkOakSaplingGenerator
         world.setBlockState(y49, Blocks.DIRT.getDefaultState());
         BlockState state = block.getDefaultState().with(SaplingBlock.STAGE, 1);
         world.setBlockState(y50, state);
