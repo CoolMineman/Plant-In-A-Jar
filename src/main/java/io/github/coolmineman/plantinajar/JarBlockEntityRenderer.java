@@ -8,7 +8,7 @@ import alexiil.mc.lib.attributes.fluid.amount.FluidAmount;
 import alexiil.mc.lib.attributes.fluid.mixin.api.IBucketItem;
 import alexiil.mc.lib.attributes.fluid.volume.FluidKeys;
 import alexiil.mc.lib.attributes.fluid.volume.FluidVolume;
-import io.github.coolmineman.plantinajar.tree.TreeMan;
+import io.github.coolmineman.plantinajar.tree.Tree;
 import alexiil.mc.lib.attributes.fluid.render.FluidRenderFace;
 import net.minecraft.block.BambooBlock;
 import net.minecraft.block.BlockState;
@@ -371,7 +371,10 @@ public class JarBlockEntityRenderer extends BlockEntityRenderer<JarBlockEntity> 
     }
 
     public void renderTreeNew(SaplingBlock sapling, JarBlockEntity entity, float tickDelta, MatrixStack matrices, VertexConsumerProvider vertexConsumers, int light, int overlay) {
-        BlockState[][][] tree = TreeMan.getTree(sapling);
+        if (entity.treeCacheKey != sapling) return;
+        Tree treeWrapper = entity.tree;
+        if (treeWrapper == null) return;
+        BlockState[][][] tree = treeWrapper.tree;
         float scale = 1f / (Math.max(tree.length, Math.max(tree[0].length, tree[0][0].length)) + 1);
         matrices.translate(0, -0.5f, 0);
         scaleCenterAligned(matrices, scale, scale, scale);
@@ -454,7 +457,7 @@ public class JarBlockEntityRenderer extends BlockEntityRenderer<JarBlockEntity> 
         scaleCenterAligned(matrices, 0.999f, 0.999f, 0.999f);
         if (entity.getPlant().getBlock() instanceof SaplingBlock) {
             renderTreeNew((SaplingBlock)entity.getPlant().getBlock(), entity, tickDelta, matrices, vertexConsumers, light, overlay);
-        } else if (JarBlockEntity.isTree(entity.getPlant())) {
+        } else if (JarBlockEntity.isTreeLegacy(entity.getPlant())) {
             matrices.translate(0, -0.5f, 0);
             scaleCenterAligned(matrices, 1f/7f, 1f/7f, 1f/7f);
             float scalefactor = (entity.getTickyes() + tickDelta) * getScaleFactor(entity);

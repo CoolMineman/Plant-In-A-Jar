@@ -9,6 +9,7 @@ import net.minecraft.block.CropBlock;
 import net.minecraft.block.NetherWartBlock;
 import net.minecraft.block.PlantBlock;
 import net.minecraft.block.RootsBlock;
+import net.minecraft.block.SaplingBlock;
 import net.minecraft.block.SproutsBlock;
 import net.minecraft.block.SugarCaneBlock;
 import net.minecraft.block.VineBlock;
@@ -56,15 +57,17 @@ public class GoodIdeaDetector {
         if (block.getBlock() instanceof CropBlock || block.getBlock() instanceof NetherWartBlock) {
             return true;
         }
-        if (JarBlockEntity.isTree(block) ||
-                    block.getBlock() instanceof CactusBlock || 
-                    block.getBlock() instanceof BambooBlock || 
-                    block.getBlock() instanceof SugarCaneBlock ||
-                    block.isOf(Blocks.RED_MUSHROOM) ||
-                    block.isOf(Blocks.BROWN_MUSHROOM) ||
-                    block.getBlock() instanceof SproutsBlock ||
-                    block.getBlock() instanceof RootsBlock
-                ) {
+        if (
+            JarBlockEntity.isTreeLegacy(block) ||
+            block.getBlock() instanceof SaplingBlock ||
+            block.getBlock() instanceof CactusBlock || 
+            block.getBlock() instanceof BambooBlock || 
+            block.getBlock() instanceof SugarCaneBlock ||
+            block.isOf(Blocks.RED_MUSHROOM) ||
+            block.isOf(Blocks.BROWN_MUSHROOM) ||
+            block.getBlock() instanceof SproutsBlock ||
+            block.getBlock() instanceof RootsBlock
+        ) {
             return true;
         }
 

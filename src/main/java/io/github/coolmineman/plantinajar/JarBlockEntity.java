@@ -1,12 +1,16 @@
 package io.github.coolmineman.plantinajar;
 
+import java.util.Random;
+
 import alexiil.mc.lib.attributes.fluid.mixin.api.IBucketItem;
 import alexiil.mc.lib.attributes.fluid.volume.FluidKeys;
-import io.github.coolmineman.plantinajar.compat.CompatManager;
 import io.github.coolmineman.plantinajar.mixin.PlantBlockAccess;
+import io.github.coolmineman.plantinajar.tree.Tree;
+import io.github.coolmineman.plantinajar.tree.TreeMan;
 import io.netty.util.internal.ThreadLocalRandom;
 import net.fabricmc.fabric.api.block.entity.BlockEntityClientSerializable;
 import net.minecraft.block.BambooBlock;
+import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.block.CactusBlock;
@@ -16,6 +20,7 @@ import net.minecraft.block.FarmlandBlock;
 import net.minecraft.block.FluidBlock;
 import net.minecraft.block.GourdBlock;
 import net.minecraft.block.InventoryProvider;
+import net.minecraft.block.LeavesBlock;
 import net.minecraft.block.NetherWartBlock;
 import net.minecraft.block.RootsBlock;
 import net.minecraft.block.SaplingBlock;
@@ -50,6 +55,7 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.registry.Registry;
+import net.minecraft.world.World;
 import net.minecraft.world.WorldAccess;
 
 public class JarBlockEntity extends BlockEntity implements Tickable, NamedScreenHandlerFactory, InventoryProvider, BlockEntityClientSerializable {
@@ -63,17 +69,36 @@ public class JarBlockEntity extends BlockEntity implements Tickable, NamedScreen
     private final JarOutputInventory output = new JarOutputInventory(10);
     private boolean hasOutputed = false;
     private int tickyes = 0;
+    private Random random = new Random();
+    private long seed = 0;
+    public Block treeCacheKey;
+    public Tree tree = null;
 
     public JarBlockEntity() {
         super(PlantInAJar.PLANT_JAR_ENTITY);
         inventory.addListener(no -> {
             if (world != null && !world.isClient) { //Do I really have to null check here mr. game?
-                tickyes = 0;
-                hasOutputed = false;
-                output.clear();
-                sync();
+                serverReset();
             }
         });
+    }
+
+    private void serverReset() {
+        tickyes = 0;
+        hasOutputed = false;
+        output.clear();
+        random.setSeed(seed);
+        seed = random.nextLong();
+        if (seed == 0) seed = 1;
+        sync();
+    }
+
+    @Override
+    public void setLocation(World world, BlockPos pos) {
+        super.setLocation(world, pos);
+        if (seed == 0) {
+            seed = pos.asLong();
+        }
     }
 
     public void shoveOutputDown() {
@@ -91,12 +116,34 @@ public class JarBlockEntity extends BlockEntity implements Tickable, NamedScreen
     @Override
     public void tick() {
         if (canGrow()) {
+            BlockState rawPlant = getRawPlant();
+            if (rawPlant.getBlock() instanceof SaplingBlock && treeCacheKey != rawPlant.getBlock()) {
+                random.setSeed(seed);
+                tree = TreeMan.genTree((SaplingBlock)rawPlant.getBlock(), random, false);
+                treeCacheKey = rawPlant.getBlock();
+            }
             if (tickyes < getGrowthTime()) {
                 tickyes++;
             } else {
                 if (!world.isClient && !hasOutputed) {
                     if (PlantInAJar.CONFIG.shouldDropItems()) {
-                        if (isTree(getPlant())) {
+                        if (rawPlant.getBlock() instanceof SaplingBlock) {
+                            random.setSeed(seed);
+                            Tree serverTree = TreeMan.genTree((SaplingBlock)rawPlant.getBlock(), random, true);
+                            for (BlockState state : serverTree.drops) {
+                                if (state.getBlock() instanceof LeavesBlock) {
+                                    for (int i = 0; i < 5; i++) {
+                                        for (ItemStack stack : state.getDroppedStacks((new LootContext.Builder((ServerWorld)getWorld())).random(world.random).parameter(LootContextParameters.ORIGIN, Vec3d.ofCenter(pos)).parameter(LootContextParameters.TOOL, ItemStack.EMPTY))) {
+                                            output.addStack(stack);
+                                        }
+                                    }
+                                } else {
+                                    for (ItemStack stack : state.getDroppedStacks((new LootContext.Builder((ServerWorld)getWorld())).random(world.random).parameter(LootContextParameters.ORIGIN, Vec3d.ofCenter(pos)).parameter(LootContextParameters.TOOL, ItemStack.EMPTY))) {
+                                        output.addStack(stack);
+                                    }
+                                }
+                            }
+                        } else if (isTreeLegacy(getPlant())) {
                             for (ItemStack stack : getTreeBlockWood(getPlant()).getDroppedStacks((new LootContext.Builder((ServerWorld)getWorld())).random(world.random).parameter(LootContextParameters.ORIGIN, Vec3d.ofCenter(pos)).parameter(LootContextParameters.TOOL, ItemStack.EMPTY))) {
                                 output.addStack(stack);
                             }
@@ -123,16 +170,11 @@ public class JarBlockEntity extends BlockEntity implements Tickable, NamedScreen
                         if ((getPlant().isOf(Blocks.CRIMSON_FUNGUS) || getPlant().isOf(Blocks.WARPED_FUNGUS)) && ThreadLocalRandom.current().nextInt(0, 99) < 20) {
                             output.addStack(Blocks.SHROOMLIGHT.getDefaultState().getDroppedStacks((new LootContext.Builder((ServerWorld)getWorld())).random(world.random).parameter(LootContextParameters.ORIGIN, Vec3d.ofCenter(pos)).parameter(LootContextParameters.TOOL, ItemStack.EMPTY)).get(0));
                         }
-                        for (ItemStack i : CompatManager.getExtraDrops(inventory.getStack(0))) {
-                            output.addStack(i);
-                        }
                     }
                     hasOutputed = true;
                 }
                 if (!world.isClient && PlantInAJar.CONFIG.shouldDropItems() && output.isEmpty() && tickyes >= getGrowthTime()) {
-                    hasOutputed = false;
-                    tickyes = 0;
-                    sync();
+                    serverReset();
                 }
             }
         }
@@ -200,15 +242,17 @@ public class JarBlockEntity extends BlockEntity implements Tickable, NamedScreen
             }
         } else if (getPlant().getBlock() instanceof VineBlock || getPlant().isOf(Blocks.WEEPING_VINES_PLANT) || getPlant().isOf(Blocks.TWISTING_VINES_PLANT)) {
             return !getBase().isAir() && !(getBaseItemStack().getItem() instanceof IBucketItem);
-        } else if (isTree(plant) ||
-                    getPlant().getBlock() instanceof CactusBlock || 
-                    getPlant().getBlock() instanceof BambooBlock || 
-                    getPlant().getBlock() instanceof SugarCaneBlock ||
-                    getPlant().isOf(Blocks.RED_MUSHROOM) ||
-                    getPlant().isOf(Blocks.BROWN_MUSHROOM) ||
-                    getPlant().getBlock() instanceof SproutsBlock ||
-                    getPlant().getBlock() instanceof RootsBlock
-                ) {
+        } else if (
+            isTreeLegacy(plant) ||
+            getPlant().getBlock() instanceof SaplingBlock ||
+            getPlant().getBlock() instanceof CactusBlock || 
+            getPlant().getBlock() instanceof BambooBlock || 
+            getPlant().getBlock() instanceof SugarCaneBlock ||
+            getPlant().isOf(Blocks.RED_MUSHROOM) ||
+            getPlant().isOf(Blocks.BROWN_MUSHROOM) ||
+            getPlant().getBlock() instanceof SproutsBlock ||
+            getPlant().getBlock() instanceof RootsBlock
+        ) {
             return !getBase().isAir() && !getBase().isOf(Blocks.JUNGLE_LOG) && !(getBaseItemStack().getItem() instanceof IBucketItem);
         }
 
@@ -265,60 +309,26 @@ public class JarBlockEntity extends BlockEntity implements Tickable, NamedScreen
         }
     }
 
-    public static boolean isTree(BlockState plant) {
-        return CompatManager.isTree(plant).orElse(plant.getBlock() instanceof SaplingBlock || plant.isOf(Blocks.CRIMSON_FUNGUS) || plant.isOf(Blocks.WARPED_FUNGUS));
+    public static boolean isTreeLegacy(BlockState plant) {
+        return plant.isOf(Blocks.CRIMSON_FUNGUS) || plant.isOf(Blocks.WARPED_FUNGUS);
     }
 
     public static BlockState getTreeBlockWood(BlockState sappling) {
-        if (sappling.isOf(Blocks.OAK_SAPLING)) {
-            return Blocks.OAK_LOG.getDefaultState();
-        } else if (sappling.isOf(Blocks.JUNGLE_SAPLING)) {
-            return Blocks.JUNGLE_LOG.getDefaultState();
-        } else if (sappling.isOf(Blocks.DARK_OAK_SAPLING)) {
-            return Blocks.DARK_OAK_LOG.getDefaultState();
-        } else if (sappling.isOf(Blocks.BIRCH_SAPLING)) {
-            return Blocks.BIRCH_LOG.getDefaultState();
-        } else if (sappling.isOf(Blocks.ACACIA_SAPLING)) {
-            return Blocks.ACACIA_LOG.getDefaultState();
-        } else if (sappling.isOf(Blocks.SPRUCE_SAPLING)) {
-            return Blocks.SPRUCE_LOG.getDefaultState();
-        } else if (sappling.isOf(Blocks.CRIMSON_FUNGUS)) {
+        if (sappling.isOf(Blocks.CRIMSON_FUNGUS)) {
             return Blocks.CRIMSON_STEM.getDefaultState();
         } else if (sappling.isOf(Blocks.WARPED_FUNGUS)) {
             return Blocks.WARPED_STEM.getDefaultState();
         }
-        BlockState compBlockState = CompatManager.getTreeBlockWood(sappling);
-        if (compBlockState == null) {
-            return Blocks.AIR.getDefaultState();
-        } else {
-            return compBlockState;
-        }
+        return Blocks.AIR.getDefaultState();
     }
 
     public static BlockState getTreeBlockLeaf(BlockState sappling) {
-        if (sappling.isOf(Blocks.OAK_SAPLING)) {
-            return Blocks.OAK_LEAVES.getDefaultState();
-        } else if (sappling.isOf(Blocks.JUNGLE_SAPLING)) {
-            return Blocks.JUNGLE_LEAVES.getDefaultState();
-        } else if (sappling.isOf(Blocks.DARK_OAK_SAPLING)) {
-            return Blocks.DARK_OAK_LEAVES.getDefaultState();
-        } else if (sappling.isOf(Blocks.BIRCH_SAPLING)) {
-            return Blocks.BIRCH_LEAVES.getDefaultState();
-        } else if (sappling.isOf(Blocks.ACACIA_SAPLING)) {
-            return Blocks.ACACIA_LEAVES.getDefaultState();
-        } else if (sappling.isOf(Blocks.SPRUCE_SAPLING)) {
-            return Blocks.SPRUCE_LEAVES.getDefaultState();
-        } else if (sappling.isOf(Blocks.CRIMSON_FUNGUS)) {
+        if (sappling.isOf(Blocks.CRIMSON_FUNGUS)) {
             return Blocks.NETHER_WART_BLOCK.getDefaultState();
         } else if (sappling.isOf(Blocks.WARPED_FUNGUS)) {
             return Blocks.WARPED_WART_BLOCK.getDefaultState();
         }
-        BlockState compBlockState = CompatManager.getTreeBlockLeaf(sappling);
-        if (compBlockState == null) {
-            return Blocks.AIR.getDefaultState();
-        } else {
-            return compBlockState;
-        }
+        return Blocks.AIR.getDefaultState();
     }
 
     public JarOutputInventory getOutput() {
@@ -333,6 +343,13 @@ public class JarBlockEntity extends BlockEntity implements Tickable, NamedScreen
         inventory.setStack(0, e.get(0));
         inventory.setStack(1, e.get(1));
         tickyes = tag.getInt("tickyes");
+        if (tag.contains("seed")) {
+            seed = tag.getLong("seed");
+        } else {
+            seed = pos.asLong();
+        }
+        treeCacheKey = null;
+        tree = null;
     }
 
     @Override
@@ -343,6 +360,7 @@ public class JarBlockEntity extends BlockEntity implements Tickable, NamedScreen
         e.set(1, inventory.getStack(1));
         Inventories.toTag(tag, e);
         tag.putInt("tickyes", tickyes);
+        tag.putLong("seed", seed);
         return tag;
     }
 

@@ -1,21 +1,17 @@
 package io.github.coolmineman.plantinajar.tree;
 
-import java.util.HashMap;
+import java.util.ArrayList;
 import java.util.Random;
 
 import io.github.coolmineman.plantinajar.fake.FakeServerWorld;
 import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
-import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.block.SaplingBlock;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.registry.Registry;
 
 public class TreeMan {
     private TreeMan() { }
-
-    private static boolean loaded = false;
 
     private static final BlockState dirt = Blocks.DIRT.getDefaultState();
     private static final BlockPos genPos = new BlockPos(0, 50, 0);
@@ -27,34 +23,10 @@ public class TreeMan {
     private static final long x1y50z0 = BlockPos.asLong(1, 50, 0);
     private static final long x0y50z1 = BlockPos.asLong(0, 50, 1);
     private static final long x1y50z1 = BlockPos.asLong(1, 50, 1);
-    private static final HashMap<Block, BlockState[][][]> treeMap = new HashMap<>();
+    private static final ThreadLocal<FakeServerWorld> fakeWorld = ThreadLocal.withInitial(FakeServerWorld::create);
 
-    public static void initIfNeeded() {
-        if (!loaded) {
-            init();
-            loaded = true;
-        }
-    }
-
-    public static BlockState[][][] getTree(SaplingBlock sappling) {
-        return treeMap.get(sappling);
-    }
-
-    @SuppressWarnings("all")
-    private static void init() {
-        FakeServerWorld world = FakeServerWorld.create();
-        Random random = new Random(1337);
-        for (Block block : Registry.BLOCK) {
-            if (block instanceof SaplingBlock) {
-                SaplingBlock saplingBlock = (SaplingBlock)block;
-                initTree(world, saplingBlock, random);
-                world.getBackingMap().clear();
-                random.setSeed(1337);
-            }
-        }
-    }
-
-    private static void initTree(FakeServerWorld world, SaplingBlock block, Random random) {
+    public static Tree genTree(SaplingBlock block, Random random, boolean server) {
+        FakeServerWorld world = fakeWorld.get();
         world.setBlockState(x0y49z0, dirt);
         BlockState state = block.getDefaultState().with(SaplingBlock.STAGE, 1);
         world.setBlockState(x0y50z0, state);
@@ -75,6 +47,7 @@ public class TreeMan {
         int maxy = 0;
         int maxz = 0;
         Long2ObjectMap<BlockState> worldMap = world.getBackingMap();
+        ArrayList<BlockState> drops = new ArrayList<>();
         for (long l : worldMap.keySet()) {
             int x = BlockPos.unpackLongX(l);
             int y = BlockPos.unpackLongY(l);
@@ -84,6 +57,24 @@ public class TreeMan {
             if (x > maxx) maxx = x;
             if (y > maxy) maxy = y;
             if (z > maxz) maxz = z;
+
+            if (y >= 50) {
+                BlockState attempt = worldMap.get(l);
+                boolean exists = false;
+                for (BlockState existing : drops) {
+                    if (existing.getBlock() == attempt.getBlock()) {
+                        exists = true;
+                        break;
+                    }
+                }
+                if (!exists) {
+                    drops.add(attempt);
+                }
+            }
+        }
+        if (server) {
+            world.getBackingMap().clear();
+            return new Tree(null, drops);
         }
         BlockState[][][] treeArray = new BlockState[maxx - minx + 1][maxy - miny + 1][maxz - minz + 1];
         for (long l : worldMap.keySet()) {
@@ -94,7 +85,7 @@ public class TreeMan {
                 treeArray[x - minx][y - miny][z - minz] = worldMap.get(l);
             }
         }
-        System.out.println(treeArray);
-        treeMap.put(block, treeArray);
+        world.getBackingMap().clear();
+        return new Tree(treeArray, drops);
     }
 }

@@ -1,20 +1,13 @@
 package io.github.coolmineman.plantinajar;
 
-import java.util.Random;
-
-import io.github.coolmineman.plantinajar.compat.CompatManager;
 import io.github.coolmineman.plantinajar.config.AutoConfigurater;
-import io.github.coolmineman.plantinajar.fake.FakeServerWorld;
-import io.github.coolmineman.plantinajar.tree.TreeMan;
 import me.shedaniel.autoconfig.AutoConfig;
 import me.shedaniel.autoconfig.serializer.GsonConfigSerializer;
 import net.fabricmc.api.ModInitializer;
-import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.fabricmc.fabric.api.object.builder.v1.block.FabricBlockSettings;
 import net.fabricmc.fabric.api.screenhandler.v1.ScreenHandlerRegistry;
 import net.minecraft.block.Block;
 import net.minecraft.block.Blocks;
-import net.minecraft.block.SaplingBlock;
 import net.minecraft.block.entity.BlockEntityType;
 import net.minecraft.item.BlockItem;
 import net.minecraft.item.Item;
@@ -22,7 +15,6 @@ import net.minecraft.item.ItemGroup;
 import net.minecraft.screen.ScreenHandlerContext;
 import net.minecraft.screen.ScreenHandlerType;
 import net.minecraft.util.Identifier;
-import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.registry.Registry;
 
 public class PlantInAJar implements ModInitializer {
@@ -48,11 +40,7 @@ public class PlantInAJar implements ModInitializer {
 		Registry.register(Registry.ITEM, new Identifier("plantinajar", "plant_jar"), new BlockItem(PLANT_JAR, new Item.Settings().group(ItemGroup.MISC)));
 		PLANT_JAR_ENTITY = Registry.register(Registry.BLOCK_ENTITY_TYPE, "plantinajar:plant_jar", BlockEntityType.Builder.create(JarBlockEntity::new, PLANT_JAR).build(null));
 		EPIC_SCREEN_HAND_YES = ScreenHandlerRegistry.registerSimple(new Identifier("plantinajar", "plant_jar"), (syncId, inventory) -> new JarGuiDescription(syncId, inventory, ScreenHandlerContext.EMPTY));
-		CompatManager.init();
 		System.out.println("You Can Put Your Plants In Jars Now!");
-		ServerLifecycleEvents.SERVER_STARTED.register(server -> {
-			TreeMan.initIfNeeded();
-		});
 		
 	}
 }
