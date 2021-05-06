@@ -51,11 +51,6 @@ public class PlantInAJar implements ModInitializer {
 		CompatManager.init();
 		System.out.println("You Can Put Your Plants In Jars Now!");
 		ServerLifecycleEvents.SERVER_STARTED.register(server -> {
-			// FakeServerWorld fakeServerWorld = FakeServerWorld.create();
-			// fakeServerWorld.setBlockState(new BlockPos(0, 49, 0), Blocks.DIRT.getDefaultState());
-			// fakeServerWorld.setBlockState(new BlockPos(0, 50, 0), Blocks.ACACIA_SAPLING.getDefaultState().with(SaplingBlock.STAGE, 1));
-			// ((SaplingBlock)Blocks.ACACIA_SAPLING).generate(fakeServerWorld, new BlockPos(0, 50, 0), Blocks.ACACIA_SAPLING.getDefaultState().with(SaplingBlock.STAGE, 1), new Random());
-			// System.out.println(fakeServerWorld);
 			TreeMan.initIfNeeded();
 		});
 		

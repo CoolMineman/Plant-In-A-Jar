@@ -50,18 +50,26 @@ public class FakeServerWorld extends ServerWorld {
         return fakeServerTickScheduler;
     }
 
+    public BlockState getBlockState(long pos) {
+        return states.getOrDefault(pos, Blocks.AIR.getDefaultState());
+    }
+
     @Override
     public BlockState getBlockState(BlockPos pos) {
-        return states.getOrDefault(pos.asLong(), Blocks.AIR.getDefaultState());
+        return getBlockState(pos.asLong());
+    }
+
+    public void setBlockState(long pos, BlockState state) {
+        if (state.isAir()) {
+            states.remove(pos);
+        } else {
+            states.put(pos, state);
+        }
     }
 
     @Override
     public boolean setBlockState(BlockPos pos, BlockState state, int flags, int maxUpdateDepth) {
-        if (state.isAir()) {
-            states.remove(pos.asLong());
-        } else {
-            states.put(pos.asLong(), state);
-        }
+        setBlockState(pos.asLong(), state);
         return true;
     }
     
