@@ -15,6 +15,8 @@ import net.minecraft.server.world.ServerTickScheduler;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.Heightmap.Type;
+import net.minecraft.world.biome.Biome;
+import net.minecraft.world.biome.BuiltinBiomes;
 
 public class FakeServerWorld extends ServerWorld {
     private static final ObjectInstantiator<FakeServerWorld> FACTORY = (new ObjenesisStd()).getInstantiatorOf(FakeServerWorld.class);
@@ -90,5 +92,10 @@ public class FakeServerWorld extends ServerWorld {
         }
         return result;
     }
-    
+
+    @Override
+    public Biome getBiome(BlockPos pos) {
+        return BuiltinBiomes.THE_VOID;
+    }
+
 }

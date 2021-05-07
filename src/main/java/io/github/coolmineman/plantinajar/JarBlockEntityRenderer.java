@@ -15,6 +15,8 @@ import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.block.CactusBlock;
 import net.minecraft.block.ConnectingBlock;
+import net.minecraft.block.CoralBlockBlock;
+import net.minecraft.block.CoralParentBlock;
 import net.minecraft.block.GourdBlock;
 import net.minecraft.block.RootsBlock;
 import net.minecraft.block.SaplingBlock;
@@ -532,7 +534,8 @@ public class JarBlockEntityRenderer extends BlockEntityRenderer<JarBlockEntity> 
                 entity.getPlant().getBlock() instanceof SugarCaneBlock ||
                 entity.getPlant().isOf(Blocks.TWISTING_VINES_PLANT) ||
                 entity.getPlant().getBlock() instanceof SproutsBlock ||
-                entity.getPlant().getBlock() instanceof RootsBlock
+                entity.getPlant().getBlock() instanceof RootsBlock ||
+                entity.getPlant().getBlock() instanceof CoralBlockBlock
             )
         {
             matrices.translate(0, -0.5f, 0);
@@ -542,7 +545,7 @@ public class JarBlockEntityRenderer extends BlockEntityRenderer<JarBlockEntity> 
             scaleBottomAligned(matrices, scalefactor);
             BlockState plant = entity.getPlant().isOf(Blocks.TWISTING_VINES_PLANT) ? Blocks.TWISTING_VINES.getDefaultState() : entity.getPlant();
             MinecraftClient.getInstance().getBlockRenderManager().renderBlockAsEntity(plant, matrices, vertexConsumers, light, overlay);
-        } else if (entity.getPlant().isOf(Blocks.SEAGRASS) || entity.getPlant().isOf(Blocks.KELP) || entity.getPlant().isOf(Blocks.SEA_PICKLE)) {
+        } else if (entity.getPlant().isOf(Blocks.SEAGRASS) || entity.getPlant().isOf(Blocks.KELP) || entity.getPlant().isOf(Blocks.SEA_PICKLE) || entity.getPlant().getBlock() instanceof CoralParentBlock) {
             matrices.translate(0, -0.5f, 0);
             float scalefactor = (entity.getTickyes() + tickDelta) * getScaleFactor(entity);
             if (scalefactor > 1) scalefactor = 1;

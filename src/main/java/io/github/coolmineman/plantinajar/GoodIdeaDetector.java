@@ -5,6 +5,8 @@ import net.minecraft.block.BambooBlock;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.block.CactusBlock;
+import net.minecraft.block.CoralBlockBlock;
+import net.minecraft.block.CoralParentBlock;
 import net.minecraft.block.CropBlock;
 import net.minecraft.block.NetherWartBlock;
 import net.minecraft.block.PlantBlock;
@@ -48,7 +50,7 @@ public class GoodIdeaDetector {
         if (block.isOf(Blocks.COCOA)) {
             return true;
         }
-        if (block.isOf(Blocks.SEAGRASS) || block.isOf(Blocks.KELP) || block.isOf(Blocks.SEA_PICKLE)) {
+        if (block.isOf(Blocks.SEAGRASS) || block.isOf(Blocks.KELP) || block.isOf(Blocks.SEA_PICKLE) || block.getBlock() instanceof CoralParentBlock || block.getBlock() instanceof CoralBlockBlock) {
             return true;
         }
         if (block.isOf(Blocks.LILY_PAD)) {

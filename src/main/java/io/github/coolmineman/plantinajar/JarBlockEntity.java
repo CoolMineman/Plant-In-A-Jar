@@ -15,6 +15,8 @@ import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.block.CactusBlock;
 import net.minecraft.block.CocoaBlock;
+import net.minecraft.block.CoralBlockBlock;
+import net.minecraft.block.CoralParentBlock;
 import net.minecraft.block.CropBlock;
 import net.minecraft.block.FarmlandBlock;
 import net.minecraft.block.FluidBlock;
@@ -162,6 +164,8 @@ public class JarBlockEntity extends BlockEntity implements Tickable, NamedScreen
                             output.addStack(new ItemStack(Items.VINE));
                         } else if (getPlant().isOf(Blocks.NETHER_SPROUTS)) {
                             output.addStack(new ItemStack(Items.NETHER_SPROUTS));
+                        } else if (getPlant().getBlock() instanceof CoralParentBlock || getPlant().getBlock() instanceof CoralBlockBlock) {
+                            output.addStack(getPlant().getBlock().getPickStack(world, pos, getPlant()));
                         } else {
                             for (ItemStack stack : getPlant().getDroppedStacks((new LootContext.Builder((ServerWorld)getWorld())).random(world.random).parameter(LootContextParameters.ORIGIN, Vec3d.ofCenter(pos)).parameter(LootContextParameters.TOOL, ItemStack.EMPTY))) {
                                 output.addStack(stack);
@@ -223,7 +227,7 @@ public class JarBlockEntity extends BlockEntity implements Tickable, NamedScreen
         if (getPlant().isOf(Blocks.COCOA)) {
             return getBase().isOf(Blocks.JUNGLE_LOG);
         }
-        if (getPlant().isOf(Blocks.SEAGRASS) || getPlant().isOf(Blocks.KELP) || getPlant().isOf(Blocks.SEA_PICKLE)) {
+        if (getPlant().isOf(Blocks.SEAGRASS) || getPlant().isOf(Blocks.KELP) || getPlant().isOf(Blocks.SEA_PICKLE) || getPlant().getBlock() instanceof CoralParentBlock || getPlant().getBlock() instanceof CoralBlockBlock) {
             return getBase().isOf(Blocks.WATER);
         }
         if (getPlant().isOf(Blocks.LILY_PAD)) {
