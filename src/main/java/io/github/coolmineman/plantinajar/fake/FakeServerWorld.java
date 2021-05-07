@@ -1,5 +1,7 @@
 package io.github.coolmineman.plantinajar.fake;
 
+import java.util.function.Predicate;
+
 import org.objenesis.ObjenesisStd;
 import org.objenesis.instantiator.ObjectInstantiator;
 
@@ -12,6 +14,7 @@ import net.minecraft.server.world.ServerChunkManager;
 import net.minecraft.server.world.ServerTickScheduler;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.Heightmap.Type;
 
 public class FakeServerWorld extends ServerWorld {
     private static final ObjectInstantiator<FakeServerWorld> FACTORY = (new ObjenesisStd()).getInstantiatorOf(FakeServerWorld.class);
@@ -71,6 +74,21 @@ public class FakeServerWorld extends ServerWorld {
     public boolean setBlockState(BlockPos pos, BlockState state, int flags, int maxUpdateDepth) {
         setBlockState(pos.asLong(), state);
         return true;
+    }
+
+    @Override
+    public int getTopY(Type heightmap, int x, int z) {
+        int result = 0;
+        Predicate<BlockState> predicate = heightmap.getBlockPredicate();
+        for (long l : states.keySet()) {
+            int px = BlockPos.unpackLongX(l);
+            int py = BlockPos.unpackLongY(l);
+            int pz = BlockPos.unpackLongZ(l);
+            if (x == px && z == pz && predicate.test(states.get(l))) {
+                result = Math.max(result, py);
+            }
+        }
+        return result;
     }
     
 }

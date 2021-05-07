@@ -16,10 +16,6 @@ configurations.all {
 
 
 repositories {
-    maven {
-        name = "CottonMC"
-        url = "https://server.bbkr.space/artifactory/libs-release"
-    }
 	maven {
         name = "BuildCraft"
         url = "https://mod-buildcraft.com/maven"
@@ -28,6 +24,10 @@ repositories {
 		name = "Bad Menu"
 		url = "https://maven.terraformersmc.com/releases"
 	}
+	maven {
+        name = "CottonMC"
+        url = "https://server.bbkr.space/artifactory/libs-release"
+    }
 	maven {
         name = 'Earthcomputer Mods'
         url = 'https://dl.bintray.com/earthcomputer/mods'
