@@ -3,6 +3,8 @@ package io.github.coolmineman.plantinajar.tree;
 import java.util.ArrayList;
 import java.util.Random;
 
+import org.jetbrains.annotations.Nullable;
+
 import io.github.coolmineman.plantinajar.fake.FakeServerWorld;
 import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import net.minecraft.block.BlockState;
@@ -25,13 +27,19 @@ public class TreeMan {
     private static final long x1y50z1 = BlockPos.asLong(1, 50, 1);
     private static final ThreadLocal<FakeServerWorld> fakeWorld = ThreadLocal.withInitial(FakeServerWorld::create);
 
-    public static Tree genTree(SaplingBlock block, Random random, boolean server) {
+    public static @Nullable Tree genTree(SaplingBlock block, BlockState jarBase, Random random, boolean server) {
+        // ChorusFlowerBlock
         FakeServerWorld world = fakeWorld.get();
         world.setBlockState(x0y49z0, dirt);
         BlockState state = block.getDefaultState().with(SaplingBlock.STAGE, 1);
         world.setBlockState(x0y50z0, state);
         block.generate(world, genPos, state, random);
+        if (world.getBlockState(x0y50z0) == state) { //Try with jar base block
+            world.setBlockState(x0y49z0, jarBase);
+            block.generate(world, genPos, state, random);
+        }
         if (world.getBlockState(x0y50z0) == state) { // Try as double tree
+            world.setBlockState(x0y49z0, dirt);
             world.setBlockState(x1y49z0, dirt);
             world.setBlockState(x0y49z1, dirt);
             world.setBlockState(x1y49z1, dirt);
@@ -40,6 +48,13 @@ public class TreeMan {
             world.setBlockState(x1y50z1, state);
             block.generate(world, genPos, state, random);
         }
+        if (world.getBlockState(x0y50z0) == state) {
+            return null; // Give up
+        }
+        return collectWorldToTree(world, server);
+    }
+
+    private static Tree collectWorldToTree(FakeServerWorld world, boolean server) {
         int minx = 0;
         int miny = 50;
         int minz = 0;

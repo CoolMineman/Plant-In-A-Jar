@@ -377,6 +377,7 @@ public class JarBlockEntityRenderer extends BlockEntityRenderer<JarBlockEntity> 
         Tree treeWrapper = entity.tree;
         if (treeWrapper == null) return;
         BlockState[][][] tree = treeWrapper.tree;
+        if (tree.length == 0 || tree[0].length == 0 || tree[0][0].length == 0) return;
         float scale = 0.9f / Math.max(tree.length, Math.max(tree[0].length, tree[0][0].length));
         matrices.translate(0, -0.5f, 0);
         scaleCenterAligned(matrices, scale, scale, scale);

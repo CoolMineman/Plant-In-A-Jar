@@ -121,7 +121,7 @@ public class JarBlockEntity extends BlockEntity implements Tickable, NamedScreen
             BlockState rawPlant = getRawPlant();
             if (rawPlant.getBlock() instanceof SaplingBlock && treeCacheKey != rawPlant.getBlock()) {
                 random.setSeed(seed);
-                tree = TreeMan.genTree((SaplingBlock)rawPlant.getBlock(), random, false);
+                tree = TreeMan.genTree((SaplingBlock)rawPlant.getBlock(), getBase(), random, false);
                 treeCacheKey = rawPlant.getBlock();
             }
             if (tickyes < getGrowthTime()) {
@@ -131,17 +131,19 @@ public class JarBlockEntity extends BlockEntity implements Tickable, NamedScreen
                     if (PlantInAJar.CONFIG.shouldDropItems()) {
                         if (rawPlant.getBlock() instanceof SaplingBlock) {
                             random.setSeed(seed);
-                            Tree serverTree = TreeMan.genTree((SaplingBlock)rawPlant.getBlock(), random, true);
-                            for (BlockState state : serverTree.drops) {
-                                if (state.getBlock() instanceof LeavesBlock) {
-                                    for (int i = 0; i < 5; i++) {
+                            Tree serverTree = TreeMan.genTree((SaplingBlock)rawPlant.getBlock(), getBase(), random, true);
+                            if (serverTree != null) {
+                                for (BlockState state : serverTree.drops) {
+                                    if (state.getBlock() instanceof LeavesBlock) {
+                                        for (int i = 0; i < 5; i++) {
+                                            for (ItemStack stack : state.getDroppedStacks((new LootContext.Builder((ServerWorld)getWorld())).random(world.random).parameter(LootContextParameters.ORIGIN, Vec3d.ofCenter(pos)).parameter(LootContextParameters.TOOL, ItemStack.EMPTY))) {
+                                                output.addStack(stack);
+                                            }
+                                        }
+                                    } else {
                                         for (ItemStack stack : state.getDroppedStacks((new LootContext.Builder((ServerWorld)getWorld())).random(world.random).parameter(LootContextParameters.ORIGIN, Vec3d.ofCenter(pos)).parameter(LootContextParameters.TOOL, ItemStack.EMPTY))) {
                                             output.addStack(stack);
                                         }
-                                    }
-                                } else {
-                                    for (ItemStack stack : state.getDroppedStacks((new LootContext.Builder((ServerWorld)getWorld())).random(world.random).parameter(LootContextParameters.ORIGIN, Vec3d.ofCenter(pos)).parameter(LootContextParameters.TOOL, ItemStack.EMPTY))) {
-                                        output.addStack(stack);
                                     }
                                 }
                             }
