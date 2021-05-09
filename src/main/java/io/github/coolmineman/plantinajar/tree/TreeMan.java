@@ -1,16 +1,28 @@
 package io.github.coolmineman.plantinajar.tree;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Random;
 
 import org.jetbrains.annotations.Nullable;
 
 import io.github.coolmineman.plantinajar.fake.FakeServerWorld;
 import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
+import net.fabricmc.api.EnvType;
+import net.fabricmc.api.Environment;
+import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.block.SaplingBlock;
+import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.color.block.BlockColors;
+import net.minecraft.client.render.RenderLayers;
+import net.minecraft.client.render.block.BlockRenderManager;
+import net.minecraft.client.render.model.BakedModel;
+import net.minecraft.client.render.model.BakedQuad;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Direction;
+import net.minecraft.util.math.MathHelper;
 
 public class TreeMan {
     private TreeMan() { }
@@ -26,6 +38,7 @@ public class TreeMan {
     private static final long x0y50z1 = BlockPos.asLong(0, 50, 1);
     private static final long x1y50z1 = BlockPos.asLong(1, 50, 1);
     private static final ThreadLocal<FakeServerWorld> fakeWorld = ThreadLocal.withInitial(FakeServerWorld::create);
+    private static final Direction[] DIRECTIONS = {Direction.DOWN, Direction.UP, Direction.NORTH, Direction.SOUTH, Direction.EAST, Direction.WEST, null};
 
     public static @Nullable Tree genTree(SaplingBlock block, BlockState jarBase, Random random, boolean server) {
         // ChorusFlowerBlock
@@ -88,16 +101,51 @@ public class TreeMan {
             }
         }
         if (server) {
-            world.getBackingMap().clear();
+            worldMap.clear();
             return new Tree(null, drops);
+        } else {
+            return getClientTree(world, drops, minx, miny, minz, maxx, maxy, maxz);
         }
-        BlockState[][][] treeArray = new BlockState[maxx - minx + 1][maxy - miny + 1][maxz - minz + 1];
+    }
+
+    @Environment(EnvType.CLIENT)
+    private static Tree getClientTree(FakeServerWorld world, ArrayList<BlockState> drops, int minx, int miny, int minz, int maxx, int maxy, int maxz) {
+        Long2ObjectMap<BlockState> worldMap = world.getBackingMap();
+        BlockRenderManager brm = MinecraftClient.getInstance().getBlockRenderManager();
+        BlockColors bcs = MinecraftClient.getInstance().getBlockColors();
+        QuadWithColor[][][][] treeArray = new QuadWithColor[maxx - minx + 1][maxy - miny + 1][maxz - minz + 1][0];
+        ArrayList<QuadWithColor> ql = new ArrayList<>();
+        Random random = new Random(42);
+        BlockPos.Mutable pos = new BlockPos.Mutable();
         for (long l : worldMap.keySet()) {
             int x = BlockPos.unpackLongX(l);
             int y = BlockPos.unpackLongY(l);
             int z = BlockPos.unpackLongZ(l);
             if (y >= 50) {
-                treeArray[x - minx][y - miny][z - minz] = worldMap.get(l);
+                BlockState s = worldMap.get(l);
+                BakedModel bm = brm.getModel(s);
+                for (Direction d : DIRECTIONS) {
+                    pos.set(x, y, z);
+                    if (d == null || Block.shouldDrawSide(s, world, pos, d)) {
+                        List<BakedQuad> bmq = bm.getQuads(s, d, random);
+                        random.setSeed(42);
+                        for (BakedQuad q : bmq) {
+                            float r = 1;
+                            float g = 1;
+                            float b = 1;
+                            if (q.hasColor()) {
+                                int color = bcs.getColor(s, world, pos, 0);
+                                r = MathHelper.clamp((color >> 16 & 255) / 255f, 0f, 1f);
+                                g = MathHelper.clamp((color >> 8 & 255) / 255f, 0f, 1f);
+                                b = MathHelper.clamp((color & 255) / 255f, 0f, 1f);
+                            }
+                            ql.add(new QuadWithColor(q, RenderLayers.getEntityBlockLayer(s, false), r, g, b));
+                        }
+                        
+                    }
+                }
+                treeArray[x - minx][y - miny][z - minz] = ql.toArray(new QuadWithColor[ql.size()]);
+                ql.clear();
             }
         }
         world.getBackingMap().clear();

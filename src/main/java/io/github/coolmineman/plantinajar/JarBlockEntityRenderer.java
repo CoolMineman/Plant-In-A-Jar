@@ -8,9 +8,11 @@ import alexiil.mc.lib.attributes.fluid.amount.FluidAmount;
 import alexiil.mc.lib.attributes.fluid.mixin.api.IBucketItem;
 import alexiil.mc.lib.attributes.fluid.volume.FluidKeys;
 import alexiil.mc.lib.attributes.fluid.volume.FluidVolume;
+import io.github.coolmineman.plantinajar.tree.QuadWithColor;
 import io.github.coolmineman.plantinajar.tree.Tree;
 import alexiil.mc.lib.attributes.fluid.render.FluidRenderFace;
 import net.minecraft.block.BambooBlock;
+import net.minecraft.block.BlockRenderType;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.block.CactusBlock;
@@ -26,10 +28,15 @@ import net.minecraft.block.TallPlantBlock;
 import net.minecraft.block.VineBlock;
 import net.minecraft.block.enums.DoubleBlockHalf;
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.render.RenderLayers;
 import net.minecraft.client.render.VertexConsumerProvider;
 import net.minecraft.client.render.block.entity.BlockEntityRenderDispatcher;
 import net.minecraft.client.render.block.entity.BlockEntityRenderer;
+import net.minecraft.client.render.item.BuiltinModelItemRenderer;
+import net.minecraft.client.render.model.BakedModel;
+import net.minecraft.client.render.model.json.ModelTransformation;
 import net.minecraft.client.util.math.MatrixStack;
+import net.minecraft.item.ItemStack;
 import net.minecraft.tag.BlockTags;
 import net.minecraft.util.math.Direction;
 
@@ -376,7 +383,7 @@ public class JarBlockEntityRenderer extends BlockEntityRenderer<JarBlockEntity> 
         if (entity.treeCacheKey != sapling) return;
         Tree treeWrapper = entity.tree;
         if (treeWrapper == null) return;
-        BlockState[][][] tree = treeWrapper.tree;
+        QuadWithColor[][][][] tree = treeWrapper.quads;
         if (tree.length == 0 || tree[0].length == 0 || tree[0][0].length == 0) return;
         float scale = 0.9f / Math.max(tree.length, Math.max(tree[0].length, tree[0][0].length));
         matrices.translate(0, -0.5f, 0);
@@ -390,10 +397,12 @@ public class JarBlockEntityRenderer extends BlockEntityRenderer<JarBlockEntity> 
         for (int i = 0; i < tree.length; i++) {
             for (int j = 0; j < tree[i].length; j++) {
                 for (int k = 0; k < tree[i][j].length; k++) {
-                    BlockState bs = tree[i][j][k];
-                    if (bs != null) {
+                    QuadWithColor[] qc = tree[i][j][k];
+                    if (qc != null) {
                         matrices.translate(i, j, k);
-                        MinecraftClient.getInstance().getBlockRenderManager().renderBlockAsEntity(bs, matrices, vertexConsumers, light, overlay);
+                        for (QuadWithColor c : qc) {
+                            vertexConsumers.getBuffer(c.renderLayer).quad(matrices.peek(), c.quad, c.r, c.g, c.b, light, overlay);
+                        }
                         matrices.translate(-i, -j, -k);
                     }
                 }
@@ -414,6 +423,7 @@ public class JarBlockEntityRenderer extends BlockEntityRenderer<JarBlockEntity> 
 
     @Override
     public void render(JarBlockEntity entity, float tickDelta, MatrixStack matrices, VertexConsumerProvider vertexConsumers, int light, int overlay) {
+        light = light - 2;
         matrices.push();
         BlockState base = entity.getBase();
         matrices.translate(0d, 1d/32d, 0d);
@@ -422,19 +432,19 @@ public class JarBlockEntityRenderer extends BlockEntityRenderer<JarBlockEntity> 
             scaleCenterAligned(matrices, 0.999f, 1f, 0.999f);
             matrices.translate(0f, -.5f + 1f/3f, 1f/3f);
             scaleBottomAligned(matrices, 1f/3f);
-            MinecraftClient.getInstance().getBlockRenderManager().renderBlockAsEntity(base, matrices, vertexConsumers, light, overlay);
+            renderBlockAsEntity(entity, base, matrices, vertexConsumers, light, overlay);
         } else if (entity.getPlant().isOf(Blocks.WEEPING_VINES_PLANT)) {
             matrices.translate(0d, -1d/32d, 0d);
             scaleCenterAligned(matrices, 0.999f, 1f, 0.999f);
             matrices.translate(0f, -.5f + 2f/3f, 0f);
             scaleBottomAligned(matrices, 1f/3f);
-            MinecraftClient.getInstance().getBlockRenderManager().renderBlockAsEntity(base, matrices, vertexConsumers, light, overlay);
+            renderBlockAsEntity(entity, base, matrices, vertexConsumers, light, overlay);
         } else if (base.isOf(Blocks.JUNGLE_LOG)) {
             matrices.translate(0d, 1d/32d, 0d);
             scaleCenterAligned(matrices, 0.999f, 1f, 0.999f);
             matrices.translate(0f, -.5f, -0.25f);
             scaleBottomAligned(matrices, .5f);
-            MinecraftClient.getInstance().getBlockRenderManager().renderBlockAsEntity(base, matrices, vertexConsumers, light, overlay);
+            renderBlockAsEntity(entity, base, matrices, vertexConsumers, light, overlay);
         } else if (base.isOf(Blocks.WATER)) {
             matrices.translate(0d, -1d/32d, 0d);
             scaleCenterAligned(matrices, 0.999f, 0.999f, 0.999f);
@@ -451,7 +461,7 @@ public class JarBlockEntityRenderer extends BlockEntityRenderer<JarBlockEntity> 
         } else {
             matrices.translate(0.0005f, 0f, 0.0005f);
             matrices.scale(0.999f, 1f/32f, 0.999f);
-            MinecraftClient.getInstance().getBlockRenderManager().renderBlockAsEntity(base, matrices, vertexConsumers, light, overlay);
+            renderBlockAsEntity(entity, base, matrices, vertexConsumers, light, overlay);
         }
         matrices.pop();
 
@@ -473,26 +483,26 @@ public class JarBlockEntityRenderer extends BlockEntityRenderer<JarBlockEntity> 
                 float scalefactor = (entity.getTickyes() + tickDelta) * getScaleFactor(entity) * 0.5f;
                 if (scalefactor > 1) scalefactor = 1;
                 scaleBottomAligned(matrices, scalefactor);
-                MinecraftClient.getInstance().getBlockRenderManager().renderBlockAsEntity(entity.getPlant(), matrices, vertexConsumers, light, overlay);
+                renderBlockAsEntity(entity, entity.getPlant(), matrices, vertexConsumers, light, overlay);
                 matrices.translate(0, 1, 0);
-                MinecraftClient.getInstance().getBlockRenderManager().renderBlockAsEntity(entity.getPlant().with(TallPlantBlock.HALF, DoubleBlockHalf.UPPER), matrices, vertexConsumers, light, overlay);
+                renderBlockAsEntity(entity, entity.getPlant().with(TallPlantBlock.HALF, DoubleBlockHalf.UPPER), matrices, vertexConsumers, light, overlay);
             } else {
                 float scalefactor = (entity.getTickyes() + tickDelta) * getScaleFactor(entity);
                 if (scalefactor > 1) scalefactor = 1;
                 scaleBottomAligned(matrices, scalefactor);
-                MinecraftClient.getInstance().getBlockRenderManager().renderBlockAsEntity(entity.getPlant(), matrices, vertexConsumers, light, overlay);
+                renderBlockAsEntity(entity, entity.getPlant(), matrices, vertexConsumers, light, overlay);
             }
         } else if (entity.getPlant().getBlock() instanceof VineBlock) {
             matrices.translate(0f, -.5f, 0f);
             scaleBottomAligned(matrices, 1f/3f);
             matrices.translate(0f, 1f, 0f);
-            MinecraftClient.getInstance().getBlockRenderManager().renderBlockAsEntity(entity.getPlant(), matrices, vertexConsumers, light, overlay);
+            renderBlockAsEntity(entity, entity.getPlant(), matrices, vertexConsumers, light, overlay);
             matrices.translate(0f, -1f, 0f);
             float scalefactor = (entity.getTickyes() + tickDelta) * getScaleFactor(entity);
             if (scalefactor > 1) scalefactor = 1;
             matrices.translate(scalefactor * -.5f + 0.5f, scalefactor * -1f + 1f, 0f);
             matrices.scale(scalefactor, scalefactor, 1f);
-            MinecraftClient.getInstance().getBlockRenderManager().renderBlockAsEntity(entity.getPlant(), matrices, vertexConsumers, light, overlay);
+            renderBlockAsEntity(entity, entity.getPlant(), matrices, vertexConsumers, light, overlay);
         } else if (entity.getPlant().isOf(Blocks.WEEPING_VINES_PLANT)) {
             matrices.translate(0f, -0.5f, 0f);
             scaleBottomAligned(matrices, 1f/3f);
@@ -501,13 +511,13 @@ public class JarBlockEntityRenderer extends BlockEntityRenderer<JarBlockEntity> 
             matrices.translate(scalefactor * -.5f + .5f, scalefactor * -2f + 1.75f + 1f/16f, scalefactor * -.5f + .5f);
             matrices.scale(scalefactor, scalefactor, scalefactor);
             matrices.translate(0f, 1f, 0f);
-            MinecraftClient.getInstance().getBlockRenderManager().renderBlockAsEntity(entity.getPlant(), matrices, vertexConsumers, light, overlay);
+            renderBlockAsEntity(entity, entity.getPlant(), matrices, vertexConsumers, light, overlay);
             matrices.translate(0f, -1f, 0f);
-            MinecraftClient.getInstance().getBlockRenderManager().renderBlockAsEntity(Blocks.WEEPING_VINES.getDefaultState(), matrices, vertexConsumers, light, overlay);
+            renderBlockAsEntity(entity, Blocks.WEEPING_VINES.getDefaultState(), matrices, vertexConsumers, light, overlay);
         } else if (entity.getPlant().isOf(Blocks.COCOA)) {
             matrices.translate(0f, -.5f, 0.25f);
             scaleBottomAligned(matrices, .5f);
-            MinecraftClient.getInstance().getBlockRenderManager().renderBlockAsEntity(entity.getPlant(), matrices, vertexConsumers, light, overlay);
+            renderBlockAsEntity(entity, entity.getPlant(), matrices, vertexConsumers, light, overlay);
         } else if (entity.getPlant().isOf(Blocks.CHORUS_FLOWER)) {
             matrices.translate(0, -0.5f, 0);
             scaleCenterAligned(matrices, 1f/17f, 1f/17f, 1f/17f);
@@ -545,13 +555,13 @@ public class JarBlockEntityRenderer extends BlockEntityRenderer<JarBlockEntity> 
             if (scalefactor > 1) scalefactor = 1;
             scaleBottomAligned(matrices, scalefactor);
             BlockState plant = entity.getPlant().isOf(Blocks.TWISTING_VINES_PLANT) ? Blocks.TWISTING_VINES.getDefaultState() : entity.getPlant();
-            MinecraftClient.getInstance().getBlockRenderManager().renderBlockAsEntity(plant, matrices, vertexConsumers, light, overlay);
+            renderBlockAsEntity(entity, plant, matrices, vertexConsumers, light, overlay);
         } else if (entity.getPlant().isOf(Blocks.SEAGRASS) || entity.getPlant().isOf(Blocks.KELP) || entity.getPlant().isOf(Blocks.SEA_PICKLE) || entity.getPlant().getBlock() instanceof CoralParentBlock) {
             matrices.translate(0, -0.5f, 0);
             float scalefactor = (entity.getTickyes() + tickDelta) * getScaleFactor(entity);
             if (scalefactor > 1) scalefactor = 1;
             scaleBottomAligned(matrices, scalefactor);
-            MinecraftClient.getInstance().getBlockRenderManager().renderBlockAsEntity(entity.getPlant(), matrices, vertexConsumers, light, overlay);
+            renderBlockAsEntity(entity, entity.getPlant(), matrices, vertexConsumers, light, overlay);
         } else if (entity.getPlant().isOf(Blocks.LILY_PAD)) {
             matrices.translate(0, -0.5f + -1f/16f, 0);
             if (entity.getBaseItemStack().getItem() instanceof IBucketItem) {
@@ -561,11 +571,29 @@ public class JarBlockEntityRenderer extends BlockEntityRenderer<JarBlockEntity> 
             float scalefactor = (entity.getTickyes() + tickDelta) * getScaleFactor(entity);
             if (scalefactor > 1) scalefactor = 1;
             scaleBottomAligned(matrices, scalefactor);
-            MinecraftClient.getInstance().getBlockRenderManager().renderBlockAsEntity(entity.getPlant(), matrices, vertexConsumers, light, overlay);
+            renderBlockAsEntity(entity, entity.getPlant(), matrices, vertexConsumers, light, overlay);
         } else {
-            MinecraftClient.getInstance().getBlockRenderManager().renderBlockAsEntity(entity.getPlant(), matrices, vertexConsumers, light, overlay);
+            renderBlockAsEntity(entity, entity.getPlant(), matrices, vertexConsumers, light, overlay);
         }
         matrices.pop();
     }
 
+    public void renderBlockAsEntity(JarBlockEntity entity, BlockState state, MatrixStack matrices, VertexConsumerProvider vertexConsumer, int light, int overlay) {
+        BlockRenderType blockRenderType = state.getRenderType();
+        switch(blockRenderType) {
+            case INVISIBLE:
+                return;
+            case MODEL:
+                BakedModel bakedModel = MinecraftClient.getInstance().getBlockRenderManager().getModel(state); 
+                int color = MinecraftClient.getInstance().getBlockColors().getColor(state, entity.getWorld(), entity.getPos(), 0);
+                float r = (color >> 16 & 255) / 510f;
+                float g = (color >> 8 & 255) / 510f;
+                float b = (color & 255) / 510f;
+                MinecraftClient.getInstance().getBlockRenderManager().getModelRenderer().render(matrices.peek(), vertexConsumer.getBuffer(RenderLayers.getEntityBlockLayer(state, false)), state, bakedModel, r, g, b, light, overlay);
+                return;
+            case ENTITYBLOCK_ANIMATED:
+                BuiltinModelItemRenderer.INSTANCE.render(new ItemStack(state.getBlock()), ModelTransformation.Mode.NONE, matrices, vertexConsumer, light, overlay);
+                return;
+        }
+    }
 }
