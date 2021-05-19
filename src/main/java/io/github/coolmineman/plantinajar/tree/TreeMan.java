@@ -37,12 +37,11 @@ public class TreeMan {
     private static final long x1y50z0 = BlockPos.asLong(1, 50, 0);
     private static final long x0y50z1 = BlockPos.asLong(0, 50, 1);
     private static final long x1y50z1 = BlockPos.asLong(1, 50, 1);
-    private static final ThreadLocal<FakeServerWorld> fakeWorld = ThreadLocal.withInitial(FakeServerWorld::create);
     private static final Direction[] DIRECTIONS = {Direction.DOWN, Direction.UP, Direction.NORTH, Direction.SOUTH, Direction.EAST, Direction.WEST, null};
 
     public static @Nullable Tree genTree(SaplingBlock block, BlockState jarBase, Random random, boolean server) {
         // ChorusFlowerBlock
-        FakeServerWorld world = fakeWorld.get();
+        FakeServerWorld world = FakeServerWorld.create();
         world.setBlockState(x0y49z0, dirt);
         BlockState state = block.getDefaultState().with(SaplingBlock.STAGE, 1);
         world.setBlockState(x0y50z0, state);

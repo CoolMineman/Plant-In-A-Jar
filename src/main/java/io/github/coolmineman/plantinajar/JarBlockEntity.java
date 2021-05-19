@@ -119,7 +119,7 @@ public class JarBlockEntity extends BlockEntity implements Tickable, NamedScreen
     public void tick() {
         if (canGrow()) {
             BlockState rawPlant = getRawPlant();
-            if (rawPlant.getBlock() instanceof SaplingBlock && treeCacheKey != rawPlant.getBlock()) {
+            if (world.isClient && rawPlant.getBlock() instanceof SaplingBlock && treeCacheKey != rawPlant.getBlock()) {
                 random.setSeed(seed);
                 tree = TreeMan.genTree((SaplingBlock)rawPlant.getBlock(), getBase(), random, false);
                 treeCacheKey = rawPlant.getBlock();
