@@ -38,7 +38,7 @@ public class GoodIdeaDetector {
         if (i.getItem().equals(Items.WEEPING_VINES) || i.getItem().equals(Items.TWISTING_VINES)) {
             return true;
         }
-        if (block.getBlock().isIn(BlockTags.FLOWERS)) {
+        if (block.isIn(BlockTags.FLOWERS)) {
             return true;
         }
         if (block.getBlock() instanceof PlantBlock) {
@@ -60,8 +60,7 @@ public class GoodIdeaDetector {
             return true;
         }
         if (
-            JarBlockEntity.isTreeLegacy(block) ||
-            block.getBlock() instanceof SaplingBlock ||
+            block.getBlock() instanceof GrowsMultiblockPlantBlock ||
             block.getBlock() instanceof CactusBlock || 
             block.getBlock() instanceof BambooBlock || 
             block.getBlock() instanceof SugarCaneBlock ||

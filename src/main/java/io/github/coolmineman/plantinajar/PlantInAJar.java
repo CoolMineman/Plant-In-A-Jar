@@ -5,6 +5,7 @@ import me.shedaniel.autoconfig.AutoConfig;
 import me.shedaniel.autoconfig.serializer.GsonConfigSerializer;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.object.builder.v1.block.FabricBlockSettings;
+import net.fabricmc.fabric.api.object.builder.v1.block.entity.FabricBlockEntityTypeBuilder;
 import net.fabricmc.fabric.api.screenhandler.v1.ScreenHandlerRegistry;
 import net.minecraft.block.Block;
 import net.minecraft.block.Blocks;
@@ -38,7 +39,7 @@ public class PlantInAJar implements ModInitializer {
 		// Proceed with mild caution.
 		Registry.register(Registry.BLOCK, new Identifier("plantinajar", "plant_jar"), PLANT_JAR);
 		Registry.register(Registry.ITEM, new Identifier("plantinajar", "plant_jar"), new BlockItem(PLANT_JAR, new Item.Settings().group(ItemGroup.MISC)));
-		PLANT_JAR_ENTITY = Registry.register(Registry.BLOCK_ENTITY_TYPE, "plantinajar:plant_jar", BlockEntityType.Builder.create(JarBlockEntity::new, PLANT_JAR).build(null));
+		PLANT_JAR_ENTITY = Registry.register(Registry.BLOCK_ENTITY_TYPE, "plantinajar:plant_jar", FabricBlockEntityTypeBuilder.create(JarBlockEntity::new, PLANT_JAR).build(null));
 		EPIC_SCREEN_HAND_YES = ScreenHandlerRegistry.registerSimple(new Identifier("plantinajar", "plant_jar"), (syncId, inventory) -> new JarGuiDescription(syncId, inventory, ScreenHandlerContext.EMPTY));
 		System.out.println("You Can Put Your Plants In Jars Now!");
 		

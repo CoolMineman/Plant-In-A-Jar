@@ -4,7 +4,11 @@
   "package": "io.github.coolmineman.plantinajar.mixin",
   "compatibilityLevel": "JAVA_8",
   "mixins": [
-    "PlantBlockAccess"
+    "PlantBlockAccess",
+    "FungusBlockMixin",
+    "MushroomPlantBlockMixin",
+    "SaplingBlockMixin",
+    "ChorusFlowerBlockMixin"
   ],
   "injectors": {
     "defaultRequire": 1

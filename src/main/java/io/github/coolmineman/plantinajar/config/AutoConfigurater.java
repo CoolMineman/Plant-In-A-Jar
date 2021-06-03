@@ -14,7 +14,7 @@ import net.minecraft.util.registry.Registry;
 @Config(name = "plantinajar")
 public class AutoConfigurater implements ConfigData {
     boolean dropItems = true;
-    int growthTime = 10;
+    int growthTime = 30;
     @ConfigEntry.Gui.Excluded
     HashMap<String, Integer> perItemGrowthTimes = new HashMap<>();
     @ConfigEntry.Gui.Excluded

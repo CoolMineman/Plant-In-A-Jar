@@ -35,7 +35,7 @@ public class JarGuiDescription extends SyncedGuiDescription {
 	}
 
 	private static Inventory getBlockInventory2(ScreenHandlerContext ctx, Supplier<Inventory> fallback) {
-		return ctx.run((world, pos) -> {
+		return ctx.get((world, pos) -> {
 			BlockState state = world.getBlockState(pos);
 			// Block b = state.getBlock();
 

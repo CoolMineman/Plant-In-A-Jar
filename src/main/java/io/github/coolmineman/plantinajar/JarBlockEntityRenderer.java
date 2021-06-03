@@ -16,12 +16,10 @@ import net.minecraft.block.BlockRenderType;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.block.CactusBlock;
-import net.minecraft.block.ConnectingBlock;
 import net.minecraft.block.CoralBlockBlock;
 import net.minecraft.block.CoralParentBlock;
 import net.minecraft.block.GourdBlock;
 import net.minecraft.block.RootsBlock;
-import net.minecraft.block.SaplingBlock;
 import net.minecraft.block.SproutsBlock;
 import net.minecraft.block.SugarCaneBlock;
 import net.minecraft.block.TallPlantBlock;
@@ -30,302 +28,18 @@ import net.minecraft.block.enums.DoubleBlockHalf;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.render.RenderLayers;
 import net.minecraft.client.render.VertexConsumerProvider;
-import net.minecraft.client.render.block.entity.BlockEntityRenderDispatcher;
 import net.minecraft.client.render.block.entity.BlockEntityRenderer;
-import net.minecraft.client.render.item.BuiltinModelItemRenderer;
 import net.minecraft.client.render.model.BakedModel;
-import net.minecraft.client.render.model.json.ModelTransformation;
 import net.minecraft.client.util.math.MatrixStack;
-import net.minecraft.item.ItemStack;
 import net.minecraft.tag.BlockTags;
 import net.minecraft.util.math.Direction;
 
-public class JarBlockEntityRenderer extends BlockEntityRenderer<JarBlockEntity> {
+public class JarBlockEntityRenderer implements BlockEntityRenderer<JarBlockEntity> {
 
     private static final FluidVolume WATER_VOLUME = FluidKeys.WATER.withAmount(FluidAmount.BUCKET);
     private static final List<FluidRenderFace> RENDER_FACES;
 
-    public enum CoolTreeEnum {
-        WOOD,
-        LEAVES,
-        AIR
-    }
-
-    public static final CoolTreeEnum[][][] tree;
-    public static final CoolTreeEnum[][][] chorus;
-    public static final CoolTreeEnum[][][] RED_MUSHROOM;
-    public static final CoolTreeEnum[][][] BROWN_MUSHROOM;
-
     static {
-        String[][] treePattern = {
-            {
-                "     ",
-                "     ",
-                "  w  ",
-                "     ",
-                "     "
-            },
-            {
-                "     ",
-                "     ",
-                "  w  ",
-                "     ",
-                "     "
-            },
-            {
-                " lll ",
-                "lllll",
-                "llwll",
-                "lllll",
-                " lll "
-            },
-            {
-                " lll ",
-                "lllll",
-                "llwll",
-                "lllll",
-                " lll "
-            },
-            {
-                "     ",
-                "  l  ",
-                " lwl ",
-                "  l  ",
-                "     "
-            },
-            {
-                "     ",
-                "  l  ",
-                " lll ",
-                "  l  ",
-                "     "
-            }
-        };
-        
-        tree = doTreeEpic(treePattern);
-
-        String[][] chorusPattern = {
-            {
-                "     ",
-                "     ",
-                "  w  ",
-                "     ",
-                "     "
-            },
-            {
-                "     ",
-                "     ",
-                "  w  ",
-                "     ",
-                "     "
-            },
-            {
-                "     ",
-                "     ",
-                "  w  ",
-                "     ",
-                "     "
-            },
-            {
-                "     ",
-                "     ",
-                "  w  ",
-                "     ",
-                "     "
-            },
-            {
-                "     ",
-                "     ",
-                "  w  ",
-                "     ",
-                "     "
-            },
-            {
-                "     ",
-                "  w  ",
-                "  w  ",
-                "     ",
-                "     "
-            },
-            {
-                "     ",
-                "  w  ",
-                "     ",
-                "     ",
-                "     "
-            },
-            {
-                "     ",
-                " ww  ",
-                "  w  ",
-                "     ",
-                "     "
-            },
-            {
-                "     ",
-                " w   ",
-                "  w  ",
-                "     ",
-                "     "
-            },
-            {
-                "     ",
-                " w   ",
-                "  ww ",
-                "  w  ",
-                "     "
-            },
-            {
-                "     ",
-                "www  ",
-                "   w ",
-                "  w  ",
-                "     "
-            },
-            {
-                "     ",
-                "l w  ",
-                "   w ",
-                "  w  ",
-                "     "
-            },
-            {
-                "  w  ",
-                " ww  ",
-                "   l ",
-                "  w  ",
-                "  w  "
-            },
-            {
-                "  l  ",
-                " w   ",
-                "     ",
-                "     ",
-                "  w  "
-            },
-            {
-                "     ",
-                " w   ",
-                "     ",
-                "     ",
-                "  l  "
-            },
-            {
-                "     ",
-                " l   ",
-                "     ",
-                "     ",
-                "     "
-            }
-        };
-
-        chorus = doTreeEpic(chorusPattern);
-
-        String[][] mushroomPattern1 = {
-            {
-                "     ",
-                "     ",
-                "  w  ",
-                "     ",
-                "     "
-            },
-            {
-                "     ",
-                "     ",
-                "  w  ",
-                "     ",
-                "     "
-            },
-            {
-                " lll ",
-                "l   l",
-                "l w l",
-                "l   l",
-                " lll "
-            },
-            {
-                " lll ",
-                "l   l",
-                "l w l",
-                "l   l",
-                " lll "
-            },
-            {
-                " lll ",
-                "l   l",
-                "l w l",
-                "l   l",
-                " lll "
-            },
-            {
-                "     ",
-                " lll ",
-                " lll ",
-                " lll ",
-                "     "
-            },
-        };
-        RED_MUSHROOM = doTreeEpic(mushroomPattern1);
-
-        String[][] mushroomPattern2 = {
-            {
-                "       ",
-                "       ",
-                "       ",
-                "   w   ",
-                "       ",
-                "       ",
-                "       "
-            },
-            {
-                "       ",
-                "       ",
-                "       ",
-                "   w   ",
-                "       ",
-                "       ",
-                "       "
-            },
-            {
-                "       ",
-                "       ",
-                "       ",
-                "   w   ",
-                "       ",
-                "       ",
-                "       "
-            },
-            {
-                "       ",
-                "       ",
-                "       ",
-                "   w   ",
-                "       ",
-                "       ",
-                "       "
-            },
-            {
-                "       ",
-                "       ",
-                "       ",
-                "   w   ",
-                "       ",
-                "       ",
-                "       "
-            },
-            {
-                " lllll ",
-                "lllllll",
-                "lllllll",
-                "lllllll",
-                "lllllll",
-                "lllllll",
-                " lllll "
-            },
-        };
-        
-        BROWN_MUSHROOM = doTreeEpic(mushroomPattern2);
-
         List<FluidRenderFace> a = new ArrayList<>();
         FluidRenderFace.appendCuboid(0d, 0d, 0d, 1d, 1d, 1d, 1d, EnumSet.allOf(Direction.class), a);
         RENDER_FACES = a;
@@ -335,51 +49,7 @@ public class JarBlockEntityRenderer extends BlockEntityRenderer<JarBlockEntity> 
         return 1f / (e.getGrowthTime());
     }
 
-    public static CoolTreeEnum[][][] doTreeEpic(String[][] treePattern) {
-        CoolTreeEnum[][][] tree1 = new CoolTreeEnum[treePattern[0].length][treePattern.length][treePattern[0][0].length()]; //Must be square
-        for (int i = 0; i < treePattern.length; i++) { //I is y
-            for (int j = 0; j < treePattern[i].length; j++) { //J is x
-                char[] e = treePattern[i][j].toCharArray();
-                for (int k = 0; k < e.length; k++) {
-                    if (e[k] == 'w') {
-                        tree1[j][i][k] = CoolTreeEnum.WOOD;
-                    } else if (e[k] == 'l') {
-                        tree1[j][i][k] =  CoolTreeEnum.LEAVES;
-                    } else {
-                        tree1[j][i][k] =  CoolTreeEnum.AIR;
-                    }
-                }
-            }
-        }
-        return tree1;
-    }
-
-    public JarBlockEntityRenderer(BlockEntityRenderDispatcher dispatcher) {
-        super(dispatcher);
-    }
-
-    public static void renderTree(BlockState wood, BlockState leaves, CoolTreeEnum[][][] epictree, MatrixStack matrices, VertexConsumerProvider vertexConsumers, int light, int overlay) {
-        int offset = (epictree.length - 1) / 2; //assume tree square
-        matrices.translate(-offset, 0, -offset);
-        for (int i = 0; i < epictree.length; i++) {
-            for (int j = 0; j < epictree[i].length; j++) {
-                for (int k = 0; k < epictree[i][j].length; k++) {
-                    if (epictree[i][j][k] == CoolTreeEnum.WOOD) {
-                        matrices.translate(i, j, k);
-                        MinecraftClient.getInstance().getBlockRenderManager().renderBlockAsEntity(wood, matrices, vertexConsumers, light, overlay);
-                        matrices.translate(-i, -j, -k);
-                    } else if (epictree[i][j][k] == CoolTreeEnum.LEAVES) {
-                        matrices.translate(i, j, k);
-                        MinecraftClient.getInstance().getBlockRenderManager().renderBlockAsEntity(leaves, matrices, vertexConsumers, light, overlay);
-                        matrices.translate(-i, -j, -k);
-                    }
-                }
-            }
-        }
-        matrices.translate(offset, 0, offset);
-    }
-
-    public void renderTreeNew(SaplingBlock sapling, JarBlockEntity entity, float tickDelta, MatrixStack matrices, VertexConsumerProvider vertexConsumers, int light, int overlay) {
+    public void renderTreeNew(GrowsMultiblockPlantBlock sapling, JarBlockEntity entity, float tickDelta, MatrixStack matrices, VertexConsumerProvider vertexConsumers, int light, int overlay) {
         if (entity.treeCacheKey != sapling) return;
         Tree treeWrapper = entity.tree;
         if (treeWrapper == null) return;
@@ -468,15 +138,8 @@ public class JarBlockEntityRenderer extends BlockEntityRenderer<JarBlockEntity> 
         matrices.push();
         matrices.translate(0d, 1d/16d, 0d);
         scaleCenterAligned(matrices, 0.999f, 0.999f, 0.999f);
-        if (entity.getPlant().getBlock() instanceof SaplingBlock) {
-            renderTreeNew((SaplingBlock)entity.getPlant().getBlock(), entity, tickDelta, matrices, vertexConsumers, light, overlay);
-        } else if (JarBlockEntity.isTreeLegacy(entity.getPlant())) {
-            matrices.translate(0, -0.5f, 0);
-            scaleCenterAligned(matrices, 1f/7f, 1f/7f, 1f/7f);
-            float scalefactor = (entity.getTickyes() + tickDelta) * getScaleFactor(entity);
-            if (scalefactor > 1) scalefactor = 1;
-            scaleBottomAligned(matrices, scalefactor);
-            renderTree(JarBlockEntity.getTreeBlockWood(entity.getPlant()), JarBlockEntity.getTreeBlockLeaf(entity.getPlant()), tree, matrices, vertexConsumers, light, overlay);
+        if (entity.getPlant().getBlock() instanceof GrowsMultiblockPlantBlock) {
+            renderTreeNew((GrowsMultiblockPlantBlock)entity.getPlant().getBlock(), entity, tickDelta, matrices, vertexConsumers, light, overlay);
         } else if (entity.getPlant().isIn(BlockTags.FLOWERS)) {
             matrices.translate(0, -0.5f, 0);
             if (entity.getPlant().getBlock() instanceof TallPlantBlock) {
@@ -518,27 +181,6 @@ public class JarBlockEntityRenderer extends BlockEntityRenderer<JarBlockEntity> 
             matrices.translate(0f, -.5f, 0.25f);
             scaleBottomAligned(matrices, .5f);
             renderBlockAsEntity(entity, entity.getPlant(), matrices, vertexConsumers, light, overlay);
-        } else if (entity.getPlant().isOf(Blocks.CHORUS_FLOWER)) {
-            matrices.translate(0, -0.5f, 0);
-            scaleCenterAligned(matrices, 1f/17f, 1f/17f, 1f/17f);
-            float scalefactor = (entity.getTickyes() + tickDelta) * getScaleFactor(entity);
-            if (scalefactor > 1) scalefactor = 1;
-            scaleBottomAligned(matrices, scalefactor);
-            renderTree(Blocks.CHORUS_PLANT.getDefaultState().with(ConnectingBlock.DOWN, true).with(ConnectingBlock.UP, true).with(ConnectingBlock.NORTH, true).with(ConnectingBlock.SOUTH, true).with(ConnectingBlock.WEST, true).with(ConnectingBlock.EAST, true), Blocks.CHORUS_FLOWER.getDefaultState(), chorus, matrices, vertexConsumers, light, overlay);
-        } else if (entity.getPlant().isOf(Blocks.RED_MUSHROOM)) {
-            matrices.translate(0, -0.5f, 0);
-            scaleCenterAligned(matrices, 1f/7f, 1f/7f, 1f/7f);
-            float scalefactor = (entity.getTickyes() + tickDelta) * getScaleFactor(entity);
-            if (scalefactor > 1) scalefactor = 1;
-            scaleBottomAligned(matrices, scalefactor);
-            renderTree(Blocks.MUSHROOM_STEM.getDefaultState(), Blocks.RED_MUSHROOM_BLOCK.getDefaultState(), RED_MUSHROOM, matrices, vertexConsumers, light, overlay);
-        } else if (entity.getPlant().isOf(Blocks.BROWN_MUSHROOM)) {
-            matrices.translate(0, -0.5f, 0);
-            scaleCenterAligned(matrices, 1f/7f, 1f/7f, 1f/7f);
-            float scalefactor = (entity.getTickyes() + tickDelta) * getScaleFactor(entity);
-            if (scalefactor > 1) scalefactor = 1;
-            scaleBottomAligned(matrices, scalefactor);
-            renderTree(Blocks.MUSHROOM_STEM.getDefaultState(), Blocks.BROWN_MUSHROOM_BLOCK.getDefaultState(), BROWN_MUSHROOM, matrices, vertexConsumers, light, overlay);
         } else if (entity.getPlant().getBlock() instanceof GourdBlock || 
                 entity.getPlant().getBlock() instanceof CactusBlock || 
                 entity.getPlant().getBlock() instanceof BambooBlock || 
@@ -579,21 +221,15 @@ public class JarBlockEntityRenderer extends BlockEntityRenderer<JarBlockEntity> 
     }
 
     public void renderBlockAsEntity(JarBlockEntity entity, BlockState state, MatrixStack matrices, VertexConsumerProvider vertexConsumer, int light, int overlay) {
+        // MinecraftClient.getInstance().getBlockRenderManager().renderBlockAsEntity(state, matrices, vertexConsumer, light, overlay);
         BlockRenderType blockRenderType = state.getRenderType();
-        switch(blockRenderType) {
-            case INVISIBLE:
-                return;
-            case MODEL:
-                BakedModel bakedModel = MinecraftClient.getInstance().getBlockRenderManager().getModel(state); 
-                int color = MinecraftClient.getInstance().getBlockColors().getColor(state, entity.getWorld(), entity.getPos(), 0);
-                float r = (color >> 16 & 255) / 510f;
-                float g = (color >> 8 & 255) / 510f;
-                float b = (color & 255) / 510f;
-                MinecraftClient.getInstance().getBlockRenderManager().getModelRenderer().render(matrices.peek(), vertexConsumer.getBuffer(RenderLayers.getEntityBlockLayer(state, false)), state, bakedModel, r, g, b, light, overlay);
-                return;
-            case ENTITYBLOCK_ANIMATED:
-                BuiltinModelItemRenderer.INSTANCE.render(new ItemStack(state.getBlock()), ModelTransformation.Mode.NONE, matrices, vertexConsumer, light, overlay);
-                return;
+        if (blockRenderType == BlockRenderType.MODEL) {
+            BakedModel bakedModel = MinecraftClient.getInstance().getBlockRenderManager().getModel(state); 
+            int color = MinecraftClient.getInstance().getBlockColors().getColor(state, entity.getWorld(), entity.getPos(), 0);
+            float r = (color >> 16 & 255) / 300f;
+            float g = (color >> 8 & 255) / 300f;
+            float b = (color & 255) / 300f;
+            MinecraftClient.getInstance().getBlockRenderManager().getModelRenderer().render(matrices.peek(), vertexConsumer.getBuffer(RenderLayers.getEntityBlockLayer(state, false)), state, bakedModel, r, g, b, light, overlay);
         }
-    }
+    }            
 }

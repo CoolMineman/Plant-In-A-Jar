@@ -23,9 +23,9 @@ import net.minecraft.block.FluidBlock;
 import net.minecraft.block.GourdBlock;
 import net.minecraft.block.InventoryProvider;
 import net.minecraft.block.LeavesBlock;
+import net.minecraft.block.MushroomBlock;
 import net.minecraft.block.NetherWartBlock;
 import net.minecraft.block.RootsBlock;
-import net.minecraft.block.SaplingBlock;
 import net.minecraft.block.SproutsBlock;
 import net.minecraft.block.StemBlock;
 import net.minecraft.block.SugarCaneBlock;
@@ -43,7 +43,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.loot.context.LootContext;
 import net.minecraft.loot.context.LootContextParameters;
-import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.NbtCompound;
 import net.minecraft.screen.NamedScreenHandlerFactory;
 import net.minecraft.screen.ScreenHandler;
 import net.minecraft.screen.ScreenHandlerContext;
@@ -51,16 +51,14 @@ import net.minecraft.server.world.ServerWorld;
 import net.minecraft.tag.BlockTags;
 import net.minecraft.text.Text;
 import net.minecraft.text.TranslatableText;
-import net.minecraft.util.Tickable;
 import net.minecraft.util.collection.DefaultedList;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.registry.Registry;
-import net.minecraft.world.World;
 import net.minecraft.world.WorldAccess;
 
-public class JarBlockEntity extends BlockEntity implements Tickable, NamedScreenHandlerFactory, InventoryProvider, BlockEntityClientSerializable {
+public class JarBlockEntity extends BlockEntity implements NamedScreenHandlerFactory, InventoryProvider, BlockEntityClientSerializable {
     private Integer clientGrowthTime = null;
     public int getGrowthTime() {
         if (clientGrowthTime != null) return clientGrowthTime;
@@ -72,17 +70,18 @@ public class JarBlockEntity extends BlockEntity implements Tickable, NamedScreen
     private boolean hasOutputed = false;
     private int tickyes = 0;
     private Random random = new Random();
-    private long seed = 0;
+    private long seed;
     public Block treeCacheKey;
     public Tree tree = null;
 
-    public JarBlockEntity() {
-        super(PlantInAJar.PLANT_JAR_ENTITY);
+    public JarBlockEntity(BlockPos pos, BlockState state) {
+        super(PlantInAJar.PLANT_JAR_ENTITY, pos, state);
         inventory.addListener(no -> {
             if (world != null && !world.isClient) { //Do I really have to null check here mr. game?
                 serverReset();
             }
         });
+        seed = pos.asLong();
     }
 
     private void serverReset() {
@@ -93,14 +92,6 @@ public class JarBlockEntity extends BlockEntity implements Tickable, NamedScreen
         seed = random.nextLong();
         if (seed == 0) seed = 1;
         sync();
-    }
-
-    @Override
-    public void setLocation(World world, BlockPos pos) {
-        super.setLocation(world, pos);
-        if (seed == 0) {
-            seed = pos.asLong();
-        }
     }
 
     public void shoveOutputDown() {
@@ -115,13 +106,12 @@ public class JarBlockEntity extends BlockEntity implements Tickable, NamedScreen
         }
     }
 
-    @Override
     public void tick() {
         if (canGrow()) {
             BlockState rawPlant = getRawPlant();
-            if (world.isClient && rawPlant.getBlock() instanceof SaplingBlock && treeCacheKey != rawPlant.getBlock()) {
+            if (world.isClient && rawPlant.getBlock() instanceof GrowsMultiblockPlantBlock && treeCacheKey != rawPlant.getBlock()) {
                 random.setSeed(seed);
-                tree = TreeMan.genTree((SaplingBlock)rawPlant.getBlock(), getBase(), random, false);
+                tree = TreeMan.genTree((GrowsMultiblockPlantBlock)rawPlant.getBlock(), getBase(), world.getBiome(pos), random, false);
                 treeCacheKey = rawPlant.getBlock();
             }
             if (tickyes < getGrowthTime()) {
@@ -129,12 +119,12 @@ public class JarBlockEntity extends BlockEntity implements Tickable, NamedScreen
             } else {
                 if (!world.isClient && !hasOutputed) {
                     if (PlantInAJar.CONFIG.shouldDropItems()) {
-                        if (rawPlant.getBlock() instanceof SaplingBlock) {
+                        if (rawPlant.getBlock() instanceof GrowsMultiblockPlantBlock) {
                             random.setSeed(seed);
-                            Tree serverTree = TreeMan.genTree((SaplingBlock)rawPlant.getBlock(), getBase(), random, true);
+                            Tree serverTree = TreeMan.genTree((GrowsMultiblockPlantBlock)rawPlant.getBlock(), getBase(), world.getBiome(pos), random, true);
                             if (serverTree != null) {
                                 for (BlockState state : serverTree.drops) {
-                                    if (state.getBlock() instanceof LeavesBlock) {
+                                    if (state.getBlock() instanceof LeavesBlock || state.getBlock() instanceof MushroomBlock) {
                                         for (int i = 0; i < 5; i++) {
                                             for (ItemStack stack : state.getDroppedStacks((new LootContext.Builder((ServerWorld)getWorld())).random(world.random).parameter(LootContextParameters.ORIGIN, Vec3d.ofCenter(pos)).parameter(LootContextParameters.TOOL, ItemStack.EMPTY))) {
                                                 output.addStack(stack);
@@ -145,15 +135,6 @@ public class JarBlockEntity extends BlockEntity implements Tickable, NamedScreen
                                             output.addStack(stack);
                                         }
                                     }
-                                }
-                            }
-                        } else if (isTreeLegacy(getPlant())) {
-                            for (ItemStack stack : getTreeBlockWood(getPlant()).getDroppedStacks((new LootContext.Builder((ServerWorld)getWorld())).random(world.random).parameter(LootContextParameters.ORIGIN, Vec3d.ofCenter(pos)).parameter(LootContextParameters.TOOL, ItemStack.EMPTY))) {
-                                output.addStack(stack);
-                            }
-                            for (int i = 0; i < 5; i++) {
-                                for (ItemStack stack : getTreeBlockLeaf(getPlant()).getDroppedStacks((new LootContext.Builder((ServerWorld)getWorld())).random(world.random).parameter(LootContextParameters.ORIGIN, Vec3d.ofCenter(pos)).parameter(LootContextParameters.TOOL, ItemStack.EMPTY))) {
-                                    output.addStack(stack);
                                 }
                             }
                         } else if (getPlant().isOf(Blocks.CHORUS_FLOWER)) {
@@ -217,7 +198,7 @@ public class JarBlockEntity extends BlockEntity implements Tickable, NamedScreen
         BlockState plant = getRawPlant();
         BlockState base = getBase();
 
-        if (getPlant().getBlock().isIn(BlockTags.FLOWERS)) {
+        if (getPlant().isIn(BlockTags.FLOWERS)) {
             return !getBase().isAir() && !getBase().isOf(Blocks.JUNGLE_LOG) && !(getBaseItemStack().getItem() instanceof IBucketItem);
         }
         if (getPlant().getBlock() instanceof GourdBlock) {
@@ -249,8 +230,7 @@ public class JarBlockEntity extends BlockEntity implements Tickable, NamedScreen
         } else if (getPlant().getBlock() instanceof VineBlock || getPlant().isOf(Blocks.WEEPING_VINES_PLANT) || getPlant().isOf(Blocks.TWISTING_VINES_PLANT)) {
             return !getBase().isAir() && !(getBaseItemStack().getItem() instanceof IBucketItem);
         } else if (
-            isTreeLegacy(plant) ||
-            getPlant().getBlock() instanceof SaplingBlock ||
+            getPlant().getBlock() instanceof GrowsMultiblockPlantBlock ||
             getPlant().getBlock() instanceof CactusBlock || 
             getPlant().getBlock() instanceof BambooBlock || 
             getPlant().getBlock() instanceof SugarCaneBlock ||
@@ -315,56 +295,32 @@ public class JarBlockEntity extends BlockEntity implements Tickable, NamedScreen
         }
     }
 
-    public static boolean isTreeLegacy(BlockState plant) {
-        return plant.isOf(Blocks.CRIMSON_FUNGUS) || plant.isOf(Blocks.WARPED_FUNGUS);
-    }
-
-    public static BlockState getTreeBlockWood(BlockState sappling) {
-        if (sappling.isOf(Blocks.CRIMSON_FUNGUS)) {
-            return Blocks.CRIMSON_STEM.getDefaultState();
-        } else if (sappling.isOf(Blocks.WARPED_FUNGUS)) {
-            return Blocks.WARPED_STEM.getDefaultState();
-        }
-        return Blocks.AIR.getDefaultState();
-    }
-
-    public static BlockState getTreeBlockLeaf(BlockState sappling) {
-        if (sappling.isOf(Blocks.CRIMSON_FUNGUS)) {
-            return Blocks.NETHER_WART_BLOCK.getDefaultState();
-        } else if (sappling.isOf(Blocks.WARPED_FUNGUS)) {
-            return Blocks.WARPED_WART_BLOCK.getDefaultState();
-        }
-        return Blocks.AIR.getDefaultState();
-    }
-
     public JarOutputInventory getOutput() {
         return output;
     }
 
     @Override
-    public void fromTag(BlockState state, CompoundTag tag) {
-        super.fromTag(state, tag);
+    public void readNbt(NbtCompound tag) {
+        super.readNbt(tag);
         DefaultedList<ItemStack> e = DefaultedList.ofSize(2, ItemStack.EMPTY);
-        Inventories.fromTag(tag, e);
+        Inventories.readNbt(tag, e);
         inventory.setStack(0, e.get(0));
         inventory.setStack(1, e.get(1));
         tickyes = tag.getInt("tickyes");
         if (tag.contains("seed")) {
             seed = tag.getLong("seed");
-        } else {
-            seed = pos.asLong();
         }
         treeCacheKey = null;
         tree = null;
     }
 
     @Override
-    public CompoundTag toTag(CompoundTag tag) {
-        super.toTag(tag);
+    public NbtCompound writeNbt(NbtCompound tag) {
+        super.writeNbt(tag);
         DefaultedList<ItemStack> e = DefaultedList.ofSize(2, ItemStack.EMPTY);
         e.set(0, inventory.getStack(0));
         e.set(1, inventory.getStack(1));
-        Inventories.toTag(tag, e);
+        Inventories.writeNbt(tag, e);
         tag.putInt("tickyes", tickyes);
         tag.putLong("seed", seed);
         return tag;
@@ -386,14 +342,14 @@ public class JarBlockEntity extends BlockEntity implements Tickable, NamedScreen
     }
 
     @Override
-    public void fromClientTag(CompoundTag tag) {
-        fromTag(null, tag);
+    public void fromClientTag(NbtCompound tag) {
+        readNbt(tag);
         clientGrowthTime = tag.getInt("growthTime");
     }
 
     @Override
-    public CompoundTag toClientTag(CompoundTag tag) {
-        toTag(tag);
+    public NbtCompound toClientTag(NbtCompound tag) {
+        writeNbt(tag);
         tag.putInt("growthTime", getGrowthTime());
         return tag;
     }

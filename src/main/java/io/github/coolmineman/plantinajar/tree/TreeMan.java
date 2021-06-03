@@ -6,6 +6,7 @@ import java.util.Random;
 
 import org.jetbrains.annotations.Nullable;
 
+import io.github.coolmineman.plantinajar.GrowsMultiblockPlantBlock;
 import io.github.coolmineman.plantinajar.fake.FakeServerWorld;
 import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import net.fabricmc.api.EnvType;
@@ -23,6 +24,7 @@ import net.minecraft.client.render.model.BakedQuad;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.MathHelper;
+import net.minecraft.world.biome.Biome;
 
 public class TreeMan {
     private TreeMan() { }
@@ -39,16 +41,17 @@ public class TreeMan {
     private static final long x1y50z1 = BlockPos.asLong(1, 50, 1);
     private static final Direction[] DIRECTIONS = {Direction.DOWN, Direction.UP, Direction.NORTH, Direction.SOUTH, Direction.EAST, Direction.WEST, null};
 
-    public static @Nullable Tree genTree(SaplingBlock block, BlockState jarBase, Random random, boolean server) {
+    public static @Nullable Tree genTree(GrowsMultiblockPlantBlock block, BlockState jarBase, Biome biome, Random random, boolean server) {
         // ChorusFlowerBlock
-        FakeServerWorld world = FakeServerWorld.create();
+        FakeServerWorld world = FakeServerWorld.create(biome);
         world.setBlockState(x0y49z0, dirt);
-        BlockState state = block.getDefaultState().with(SaplingBlock.STAGE, 1);
+        Block block2 = ((Block)block);
+        BlockState state = block2.getDefaultState().contains(SaplingBlock.STAGE) ? block2.getDefaultState().with(SaplingBlock.STAGE, 1) : block2.getDefaultState();
         world.setBlockState(x0y50z0, state);
-        block.generate(world, genPos, state, random);
+        block.doTheGrow(world, genPos, state, random);
         if (world.getBlockState(x0y50z0) == state) { //Try with jar base block
             world.setBlockState(x0y49z0, jarBase);
-            block.generate(world, genPos, state, random);
+            block.doTheGrow(world, genPos, state, random);
         }
         if (world.getBlockState(x0y50z0) == state) { // Try as double tree
             world.setBlockState(x0y49z0, dirt);
@@ -58,7 +61,7 @@ public class TreeMan {
             world.setBlockState(x1y50z0, state);
             world.setBlockState(x0y50z1, state);
             world.setBlockState(x1y50z1, state);
-            block.generate(world, genPos, state, random);
+            block.doTheGrow(world, genPos, state, random);
         }
         if (world.getBlockState(x0y50z0) == state) {
             return null; // Give up
@@ -116,6 +119,7 @@ public class TreeMan {
         ArrayList<QuadWithColor> ql = new ArrayList<>();
         Random random = new Random(42);
         BlockPos.Mutable pos = new BlockPos.Mutable();
+        BlockPos.Mutable cullTestPos = new BlockPos.Mutable();
         for (long l : worldMap.keySet()) {
             int x = BlockPos.unpackLongX(l);
             int y = BlockPos.unpackLongY(l);
@@ -125,7 +129,7 @@ public class TreeMan {
                 BakedModel bm = brm.getModel(s);
                 for (Direction d : DIRECTIONS) {
                     pos.set(x, y, z);
-                    if (d == null || Block.shouldDrawSide(s, world, pos, d)) {
+                    if (d == null || Block.shouldDrawSide(s, world, pos, d, cullTestPos.set(pos, d))) {
                         List<BakedQuad> bmq = bm.getQuads(s, d, random);
                         random.setSeed(42);
                         for (BakedQuad q : bmq) {
