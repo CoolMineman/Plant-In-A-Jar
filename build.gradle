@@ -23,10 +23,6 @@ repositories {
         url = "https://mod-buildcraft.com/maven"
     }
 	maven {
-		name = "Bad Menu"
-		url = "https://maven.terraformersmc.com/releases"
-	}
-	maven {
         name = "CottonMC"
         url = "https://server.bbkr.space/artifactory/libs-release"
     }
@@ -40,6 +36,10 @@ repositories {
 	maven {
 		name = "No"
 		url 'https://jitpack.io'
+	}
+		maven {
+		name = "Bad Menu"
+		url = "https://maven.terraformersmc.com/releases"
 	}
 }
 
