@@ -8,7 +8,7 @@ import io.github.coolmineman.plantinajar.mixin.PlantBlockAccess;
 import io.github.coolmineman.plantinajar.tree.Tree;
 import io.github.coolmineman.plantinajar.tree.TreeMan;
 import io.netty.util.internal.ThreadLocalRandom;
-import net.fabricmc.fabric.api.block.entity.BlockEntityClientSerializable;
+//import net.fabricmc.fabric.api.block.entity.BlockEntityClientSerializable;
 import net.minecraft.block.BambooBlock;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
@@ -44,6 +44,9 @@ import net.minecraft.item.Items;
 import net.minecraft.loot.context.LootContext;
 import net.minecraft.loot.context.LootContextParameters;
 import net.minecraft.nbt.NbtCompound;
+import net.minecraft.network.Packet;
+import net.minecraft.network.listener.ClientPlayPacketListener;
+import net.minecraft.network.packet.s2c.play.BlockEntityUpdateS2CPacket;
 import net.minecraft.screen.NamedScreenHandlerFactory;
 import net.minecraft.screen.ScreenHandler;
 import net.minecraft.screen.ScreenHandlerContext;
@@ -58,7 +61,9 @@ import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.registry.Registry;
 import net.minecraft.world.WorldAccess;
 
-public class JarBlockEntity extends BlockEntity implements NamedScreenHandlerFactory, InventoryProvider, BlockEntityClientSerializable {
+import javax.annotation.Nullable;
+
+public class JarBlockEntity extends BlockEntity implements NamedScreenHandlerFactory, InventoryProvider {
     private Integer clientGrowthTime = null;
     public int getGrowthTime() {
         if (clientGrowthTime != null) return clientGrowthTime;
@@ -91,11 +96,15 @@ public class JarBlockEntity extends BlockEntity implements NamedScreenHandlerFac
         random.setSeed(seed);
         seed = random.nextLong();
         if (seed == 0) seed = 1;
-        sync();
+
+        // sync()
+        markDirty();
+        this.world.updateListeners(getPos(), getCachedState(), getCachedState(), Block.NOTIFY_ALL);
+
     }
 
     public void shoveOutputDown() {
-        Inventory down = HopperBlockEntity.getInventoryAt(world, this.pos.down());
+        Inventory down = HopperBlockEntity.getInventoryAt(getWorld(), this.pos.down());
         if (down != null) {
             for(int i = 0; i < this.getOutput().size(); ++i) {
                 if (!this.getOutput().getStack(i).isEmpty()) {
@@ -109,29 +118,30 @@ public class JarBlockEntity extends BlockEntity implements NamedScreenHandlerFac
     public void tick() {
         if (canGrow()) {
             BlockState rawPlant = getRawPlant();
-            if (world.isClient && rawPlant.getBlock() instanceof GrowsMultiblockPlantBlock && treeCacheKey != rawPlant.getBlock()) {
+            if (world == null) return;
+            if (getWorld().isClient() && rawPlant.getBlock() instanceof GrowsMultiblockPlantBlock && treeCacheKey != rawPlant.getBlock()) {
                 random.setSeed(seed);
-                tree = TreeMan.genTree((GrowsMultiblockPlantBlock)rawPlant.getBlock(), getBase(), world.getBiome(pos), random, false);
+                tree = TreeMan.genTree((GrowsMultiblockPlantBlock)rawPlant.getBlock(), getBase(), getWorld().getBiome(pos), random, false, getWorld().getLevelProperties());
                 treeCacheKey = rawPlant.getBlock();
             }
             if (tickyes < getGrowthTime()) {
                 tickyes++;
             } else {
-                if (!world.isClient && !hasOutputed) {
+                if (!getWorld().isClient() && !hasOutputed) {
                     if (PlantInAJar.CONFIG.shouldDropItems()) {
                         if (rawPlant.getBlock() instanceof GrowsMultiblockPlantBlock) {
                             random.setSeed(seed);
-                            Tree serverTree = TreeMan.genTree((GrowsMultiblockPlantBlock)rawPlant.getBlock(), getBase(), world.getBiome(pos), random, true);
+                            Tree serverTree = TreeMan.genTree((GrowsMultiblockPlantBlock)rawPlant.getBlock(), getBase(), getWorld().getBiome(pos), random, true, getWorld().getLevelProperties());
                             if (serverTree != null) {
                                 for (BlockState state : serverTree.drops) {
                                     if (state.getBlock() instanceof LeavesBlock || state.getBlock() instanceof MushroomBlock) {
                                         for (int i = 0; i < 5; i++) {
-                                            for (ItemStack stack : state.getDroppedStacks((new LootContext.Builder((ServerWorld)getWorld())).random(world.random).parameter(LootContextParameters.ORIGIN, Vec3d.ofCenter(pos)).parameter(LootContextParameters.TOOL, ItemStack.EMPTY))) {
+                                            for (ItemStack stack : state.getDroppedStacks((new LootContext.Builder((ServerWorld)getWorld())).random(getWorld().random).parameter(LootContextParameters.ORIGIN, Vec3d.ofCenter(pos)).parameter(LootContextParameters.TOOL, ItemStack.EMPTY))) {
                                                 output.addStack(stack);
                                             }
                                         }
                                     } else {
-                                        for (ItemStack stack : state.getDroppedStacks((new LootContext.Builder((ServerWorld)getWorld())).random(world.random).parameter(LootContextParameters.ORIGIN, Vec3d.ofCenter(pos)).parameter(LootContextParameters.TOOL, ItemStack.EMPTY))) {
+                                        for (ItemStack stack : state.getDroppedStacks((new LootContext.Builder((ServerWorld)getWorld())).random(getWorld().random).parameter(LootContextParameters.ORIGIN, Vec3d.ofCenter(pos)).parameter(LootContextParameters.TOOL, ItemStack.EMPTY))) {
                                             output.addStack(stack);
                                         }
                                     }
@@ -160,12 +170,12 @@ public class JarBlockEntity extends BlockEntity implements NamedScreenHandlerFac
                     }
                     hasOutputed = true;
                 }
-                if (!world.isClient && PlantInAJar.CONFIG.shouldDropItems() && output.isEmpty() && tickyes >= getGrowthTime()) {
+                if (!getWorld().isClient() && PlantInAJar.CONFIG.shouldDropItems() && output.isEmpty() && tickyes >= getGrowthTime()) {
                     serverReset();
                 }
             }
         }
-        if (!world.isClient)
+        if (!getWorld().isClient())
             shoveOutputDown();
     }
 
@@ -315,7 +325,7 @@ public class JarBlockEntity extends BlockEntity implements NamedScreenHandlerFac
     }
 
     @Override
-    public NbtCompound writeNbt(NbtCompound tag) {
+    public void writeNbt(NbtCompound tag) {
         super.writeNbt(tag);
         DefaultedList<ItemStack> e = DefaultedList.ofSize(2, ItemStack.EMPTY);
         e.set(0, inventory.getStack(0));
@@ -323,7 +333,6 @@ public class JarBlockEntity extends BlockEntity implements NamedScreenHandlerFac
         Inventories.writeNbt(tag, e);
         tag.putInt("tickyes", tickyes);
         tag.putLong("seed", seed);
-        return tag;
     }
 
     @Override
@@ -341,6 +350,7 @@ public class JarBlockEntity extends BlockEntity implements NamedScreenHandlerFac
         return inventory;
     }
 
+    /*
     @Override
     public void fromClientTag(NbtCompound tag) {
         readNbt(tag);
@@ -352,6 +362,18 @@ public class JarBlockEntity extends BlockEntity implements NamedScreenHandlerFac
         writeNbt(tag);
         tag.putInt("growthTime", getGrowthTime());
         return tag;
+    }
+     */
+
+    @Nullable
+    @Override
+    public Packet<ClientPlayPacketListener> toUpdatePacket() {
+        return BlockEntityUpdateS2CPacket.create(this);
+    }
+
+    @Override
+    public NbtCompound toInitialChunkDataNbt() {
+        return createNbt();
     }
 
     public int getTickyes() {

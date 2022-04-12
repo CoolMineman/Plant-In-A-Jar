@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
+import net.minecraft.util.registry.RegistryEntry;
+import net.minecraft.world.WorldProperties;
 import org.jetbrains.annotations.Nullable;
 
 import io.github.coolmineman.plantinajar.GrowsMultiblockPlantBlock;
@@ -41,9 +43,9 @@ public class TreeMan {
     private static final long x1y50z1 = BlockPos.asLong(1, 50, 1);
     private static final Direction[] DIRECTIONS = {Direction.DOWN, Direction.UP, Direction.NORTH, Direction.SOUTH, Direction.EAST, Direction.WEST, null};
 
-    public static @Nullable Tree genTree(GrowsMultiblockPlantBlock block, BlockState jarBase, Biome biome, Random random, boolean server) {
+    public static @Nullable Tree genTree(GrowsMultiblockPlantBlock block, BlockState jarBase, RegistryEntry<Biome> biome, Random random, boolean server, WorldProperties properties) {
         // ChorusFlowerBlock
-        FakeServerWorld world = FakeServerWorld.create(biome);
+        FakeServerWorld world = FakeServerWorld.create(biome, properties);
         world.setBlockState(x0y49z0, dirt);
         Block block2 = ((Block)block);
         BlockState state = block2.getDefaultState().contains(SaplingBlock.STAGE) ? block2.getDefaultState().with(SaplingBlock.STAGE, 1) : block2.getDefaultState();
