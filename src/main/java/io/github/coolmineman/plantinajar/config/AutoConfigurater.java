@@ -1,24 +1,18 @@
 package io.github.coolmineman.plantinajar.config;
 
-import java.util.HashMap;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
-import me.shedaniel.autoconfig.AutoConfig;
-import me.shedaniel.autoconfig.ConfigData;
-import me.shedaniel.autoconfig.annotation.Config;
-import me.shedaniel.autoconfig.annotation.ConfigEntry;
-import me.shedaniel.autoconfig.ConfigManager;
 import net.minecraft.block.Blocks;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.registry.Registry;
 
-@Config(name = "plantinajar")
-public class AutoConfigurater implements ConfigData {
+public class AutoConfigurater {
     boolean dropItems = true;
     int growthTime = 30;
-    @ConfigEntry.Gui.Excluded
-    HashMap<String, Integer> perItemGrowthTimes = new HashMap<>();
-    @ConfigEntry.Gui.Excluded
-    HashMap<String, Integer> growthModifierRegexPatterns = new HashMap<>();
+    ConcurrentHashMap<String, Integer> perItemGrowthTimes = new ConcurrentHashMap<>();
+    ConcurrentHashMap<String, Integer> growthModifierRegexPatterns = new ConcurrentHashMap<>();
+    public Set<String> blackList = ConcurrentHashMap.newKeySet();
 
     public boolean shouldDropItems() {
         return this.dropItems;
@@ -31,7 +25,7 @@ public class AutoConfigurater implements ConfigData {
             needsResave = true;
         }
         Integer perItemGrowthTime = perItemGrowthTimes.computeIfAbsent(i.toString(), k -> -1);
-        if (needsResave) ((ConfigManager)AutoConfig.getConfigHolder(AutoConfigurater.class)).save();
+        if (needsResave) ConfigHolder.INSTANCE.save();
         int result = perItemGrowthTime;
         if (result <= 0) result = growthTime;
         result += RegexComputation.getGrowthModifier(i.toString());
@@ -39,10 +33,7 @@ public class AutoConfigurater implements ConfigData {
         return result;
     }
 
-    @Override
-    public void validatePostLoad() throws ValidationException {
-        ConfigData.super.validatePostLoad();
+    public void postLoad() {
         RegexComputation.init(growthModifierRegexPatterns);
     }
-
 }

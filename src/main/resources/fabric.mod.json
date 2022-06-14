@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "id": "plantinajar",
-  "version": "${version}",
+  "version": "2.3.0",
 
   "name": "Plant In A Jar",
   "description": "This is a description! I won't tell everyone what my mod is about!",
@@ -23,9 +23,6 @@
     ],
     "client": [
       "io.github.coolmineman.plantinajar.PlantInAJarClient"
-    ],
-    "modmenu": [
-      "io.github.coolmineman.plantinajar.config.BadMenuIntegration"
     ]
   },
   "mixins": [
@@ -34,10 +31,6 @@
 
   "depends": {
     "fabricloader": ">=0.7.4",
-    "fabric": "*",
-    "minecraft": "1.17.x"
-  },
-  "suggests": {
-    "flamingo": "*"
+    "minecraft": "*"
   }
 }

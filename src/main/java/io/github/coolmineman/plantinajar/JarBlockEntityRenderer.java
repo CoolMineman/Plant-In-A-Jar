@@ -1,16 +1,18 @@
 package io.github.coolmineman.plantinajar;
 
-import java.util.ArrayList;
-import java.util.EnumSet;
-import java.util.List;
-
-import alexiil.mc.lib.attributes.fluid.amount.FluidAmount;
-import alexiil.mc.lib.attributes.fluid.mixin.api.IBucketItem;
-import alexiil.mc.lib.attributes.fluid.volume.FluidKeys;
-import alexiil.mc.lib.attributes.fluid.volume.FluidVolume;
 import io.github.coolmineman.plantinajar.tree.QuadWithColor;
 import io.github.coolmineman.plantinajar.tree.Tree;
-import alexiil.mc.lib.attributes.fluid.render.FluidRenderFace;
+import net.fabricmc.fabric.api.renderer.v1.Renderer;
+import net.fabricmc.fabric.api.renderer.v1.RendererAccess;
+import net.fabricmc.fabric.api.renderer.v1.mesh.MutableQuadView;
+import net.fabricmc.fabric.api.renderer.v1.mesh.QuadEmitter;
+import net.fabricmc.fabric.api.transfer.v1.client.fluid.FluidVariantRendering;
+import net.fabricmc.fabric.api.transfer.v1.context.ContainerItemContext;
+import net.fabricmc.fabric.api.transfer.v1.fluid.FluidStorage;
+import net.fabricmc.fabric.api.transfer.v1.fluid.FluidVariant;
+import net.fabricmc.fabric.api.transfer.v1.storage.Storage;
+import net.fabricmc.fabric.api.transfer.v1.storage.StorageView;
+import net.fabricmc.fabric.api.transfer.v1.transaction.Transaction;
 import net.minecraft.block.BambooBlock;
 import net.minecraft.block.BlockRenderType;
 import net.minecraft.block.BlockState;
@@ -24,27 +26,22 @@ import net.minecraft.block.SproutsBlock;
 import net.minecraft.block.SugarCaneBlock;
 import net.minecraft.block.TallPlantBlock;
 import net.minecraft.block.VineBlock;
+import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.block.enums.DoubleBlockHalf;
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.render.OverlayTexture;
+import net.minecraft.client.render.RenderLayer;
 import net.minecraft.client.render.RenderLayers;
+import net.minecraft.client.render.VertexConsumer;
 import net.minecraft.client.render.VertexConsumerProvider;
 import net.minecraft.client.render.block.entity.BlockEntityRenderer;
 import net.minecraft.client.render.model.BakedModel;
+import net.minecraft.client.texture.Sprite;
 import net.minecraft.client.util.math.MatrixStack;
+import net.minecraft.fluid.Fluids;
 import net.minecraft.tag.BlockTags;
 import net.minecraft.util.math.Direction;
-
 public class JarBlockEntityRenderer implements BlockEntityRenderer<JarBlockEntity> {
-
-    private static final FluidVolume WATER_VOLUME = FluidKeys.WATER.withAmount(FluidAmount.BUCKET);
-    private static final List<FluidRenderFace> RENDER_FACES;
-
-    static {
-        List<FluidRenderFace> a = new ArrayList<>();
-        FluidRenderFace.appendCuboid(0d, 0d, 0d, 1d, 1d, 1d, 1d, EnumSet.allOf(Direction.class), a);
-        RENDER_FACES = a;
-    }
-
     public static float getScaleFactor(JarBlockEntity e) {
         return 1f / (e.getGrowthTime());
     }
@@ -93,9 +90,10 @@ public class JarBlockEntityRenderer implements BlockEntityRenderer<JarBlockEntit
 
     @Override
     public void render(JarBlockEntity entity, float tickDelta, MatrixStack matrices, VertexConsumerProvider vertexConsumers, int light, int overlay) {
-        light = light - 2;
+        // light -= 12;
         matrices.push();
         BlockState base = entity.getBase();
+        double fluidHeight = 0;
         matrices.translate(0d, 1d/32d, 0d);
         if (entity.getPlant().getBlock() instanceof VineBlock) {
             matrices.translate(0d, 1d/32d, 0d);
@@ -118,15 +116,22 @@ public class JarBlockEntityRenderer implements BlockEntityRenderer<JarBlockEntit
         } else if (base.isOf(Blocks.WATER)) {
             matrices.translate(0d, -1d/32d, 0d);
             scaleCenterAligned(matrices, 0.999f, 0.999f, 0.999f);
-            CoolFluidVolumeRenderer.INSTANCE.render(WATER_VOLUME, RENDER_FACES, vertexConsumers, matrices);
-        } else if (entity.getBaseItemStack().getItem() instanceof IBucketItem) {
+            renderFluid(matrices, vertexConsumers, FluidVariant.of(Fluids.WATER), entity, 1f, light, overlay);
+        } else if (FluidStorage.ITEM.find(entity.getBaseItemStack(), ContainerItemContext.withInitial(entity.getBaseItemStack())) != null) {
             matrices.translate(0d, -1d/32d, 0d);
             scaleCenterAligned(matrices, 0.999f, 0.999f, 0.999f);
-            IBucketItem item = (IBucketItem)entity.getBaseItemStack().getItem();
-            if (!item.libblockattributes__getFluid(entity.getBaseItemStack()).equals(FluidKeys.EMPTY)) {
-                List<FluidRenderFace> a = new ArrayList<>();
-                FluidRenderFace.appendCuboid(0d, 0d, 0d, 1d, item.libblockattributes__getFluidVolumeAmount().asInexactDouble(), 1d, 1d, EnumSet.allOf(Direction.class), a);
-                CoolFluidVolumeRenderer.INSTANCE.render(item.libblockattributes__getFluid(entity.getBaseItemStack()).withAmount(FluidAmount.BUCKET), a, vertexConsumers, matrices);
+            Storage<FluidVariant> fs = FluidStorage.ITEM.find(entity.getBaseItemStack(), ContainerItemContext.withInitial(entity.getBaseItemStack()));
+            if (fs != null) {
+                try (Transaction t = Transaction.openOuter()) {
+                    StorageView<FluidVariant> bsv = null;
+                    for (StorageView<FluidVariant> sv : fs.iterable(t)) {
+                        if (bsv == null || sv.getAmount() > bsv.getAmount()) bsv = sv;
+                    }
+                    if (bsv != null) {
+                        fluidHeight = Math.min(bsv.getAmount(), 81000)/81000.0;
+                        renderFluid(matrices, vertexConsumers, bsv.getResource(), entity, Math.min(bsv.getAmount(), 81000)/81000f, light, overlay);
+                    }
+                }
             }
         } else {
             matrices.translate(0.0005f, 0f, 0.0005f);
@@ -206,9 +211,8 @@ public class JarBlockEntityRenderer implements BlockEntityRenderer<JarBlockEntit
             renderBlockAsEntity(entity, entity.getPlant(), matrices, vertexConsumers, light, overlay);
         } else if (entity.getPlant().isOf(Blocks.LILY_PAD)) {
             matrices.translate(0, -0.5f + -1f/16f, 0);
-            if (entity.getBaseItemStack().getItem() instanceof IBucketItem) {
-                IBucketItem item = (IBucketItem)entity.getBaseItemStack().getItem();
-                matrices.translate(0d, item.libblockattributes__getFluidVolumeAmount().asInexactDouble(), 0d);
+            if (FluidStorage.ITEM.find(entity.getBaseItemStack(), ContainerItemContext.withInitial(entity.getBaseItemStack())) != null) {
+                matrices.translate(0d, fluidHeight, 0d);
             }
             float scalefactor = (entity.getTickyes() + tickDelta) * getScaleFactor(entity);
             if (scalefactor > 1) scalefactor = 1;
@@ -231,5 +235,30 @@ public class JarBlockEntityRenderer implements BlockEntityRenderer<JarBlockEntit
             float b = (color & 255) / 300f;
             MinecraftClient.getInstance().getBlockRenderManager().getModelRenderer().render(matrices.peek(), vertexConsumer.getBuffer(RenderLayers.getEntityBlockLayer(state, false)), state, bakedModel, r, g, b, light, overlay);
         }
-    }            
+    }
+
+    public void renderFluid(MatrixStack matrices, VertexConsumerProvider vertexConsumers, FluidVariant fv, BlockEntity entity, float height, int light, int overlay) {
+        VertexConsumer c = MinecraftClient.isFabulousGraphicsOrBetter() ? vertexConsumers.getBuffer(RenderLayer.getTranslucentMovingBlock()) : vertexConsumers.getBuffer(RenderLayer.getTranslucent());
+        Sprite sprite = FluidVariantRendering.getSprite(fv);
+        // FluidRenderer
+        int color = FluidVariantRendering.getColor(fv, entity.getWorld(), entity.getPos());
+        float r = ((color >> 16) & 255) / 256f;
+        float g = ((color >> 8) & 255) / 256f;
+        float b = (color & 255) / 256f;
+
+        Renderer renderer = RendererAccess.INSTANCE.getRenderer();
+        for (Direction direction : Direction.values()) {
+            QuadEmitter emitter = renderer.meshBuilder().getEmitter();
+
+            if (direction.getAxis().isVertical()) {
+                emitter.square(direction, 0, 0, 1, 1, direction == Direction.UP ? 1 - height : 0);
+            } else {
+                emitter.square(direction, 0, 0, 1 , height, 0);
+            }
+
+            emitter.spriteBake(0, sprite, MutableQuadView.BAKE_LOCK_UV);
+            emitter.spriteColor(0, -1, -1, -1, -1);
+            c.quad(matrices.peek(), emitter.toBakedQuad(0, sprite, false), r, g, b, light, OverlayTexture.DEFAULT_UV);
+        }
+    }
 }

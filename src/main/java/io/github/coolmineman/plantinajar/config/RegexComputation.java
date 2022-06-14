@@ -1,8 +1,8 @@
 package io.github.coolmineman.plantinajar.config;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
 import java.util.regex.Pattern;
 
@@ -13,7 +13,7 @@ public class RegexComputation {
 
     private static List<Entry<Pattern, Integer>> growthModifierRegexPatterns = new ArrayList<>();
 
-    static void init(HashMap<String, Integer> yes) {
+    static void init(Map<String, Integer> yes) {
         for (Entry<String, Integer> e : yes.entrySet()) {
             growthModifierRegexPatterns.add(new ImmutablePair<>(Pattern.compile(e.getKey()), e.getValue()));
         }

@@ -7,6 +7,7 @@ import java.util.Random;
 import org.jetbrains.annotations.Nullable;
 
 import io.github.coolmineman.plantinajar.GrowsMultiblockPlantBlock;
+import io.github.coolmineman.plantinajar.PlantInAJar;
 import io.github.coolmineman.plantinajar.fake.FakeServerWorld;
 import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import net.fabricmc.api.EnvType;
@@ -24,6 +25,8 @@ import net.minecraft.client.render.model.BakedQuad;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.MathHelper;
+import net.minecraft.util.registry.Registry;
+import net.minecraft.util.registry.RegistryEntry;
 import net.minecraft.world.biome.Biome;
 
 public class TreeMan {
@@ -41,32 +44,40 @@ public class TreeMan {
     private static final long x1y50z1 = BlockPos.asLong(1, 50, 1);
     private static final Direction[] DIRECTIONS = {Direction.DOWN, Direction.UP, Direction.NORTH, Direction.SOUTH, Direction.EAST, Direction.WEST, null};
 
-    public static @Nullable Tree genTree(GrowsMultiblockPlantBlock block, BlockState jarBase, Biome biome, Random random, boolean server) {
-        // ChorusFlowerBlock
-        FakeServerWorld world = FakeServerWorld.create(biome);
-        world.setBlockState(x0y49z0, dirt);
+    public static @Nullable Tree genTree(GrowsMultiblockPlantBlock block, BlockState jarBase, RegistryEntry<Biome> biome, Random random, boolean server) {
         Block block2 = ((Block)block);
-        BlockState state = block2.getDefaultState().contains(SaplingBlock.STAGE) ? block2.getDefaultState().with(SaplingBlock.STAGE, 1) : block2.getDefaultState();
-        world.setBlockState(x0y50z0, state);
-        block.doTheGrow(world, genPos, state, random);
-        if (world.getBlockState(x0y50z0) == state) { //Try with jar base block
-            world.setBlockState(x0y49z0, jarBase);
-            block.doTheGrow(world, genPos, state, random);
-        }
-        if (world.getBlockState(x0y50z0) == state) { // Try as double tree
+        try {
+            // ChorusFlowerBlock
+            FakeServerWorld world = FakeServerWorld.create(biome);
             world.setBlockState(x0y49z0, dirt);
-            world.setBlockState(x1y49z0, dirt);
-            world.setBlockState(x0y49z1, dirt);
-            world.setBlockState(x1y49z1, dirt);
-            world.setBlockState(x1y50z0, state);
-            world.setBlockState(x0y50z1, state);
-            world.setBlockState(x1y50z1, state);
+            BlockState state = block2.getDefaultState().contains(SaplingBlock.STAGE) ? block2.getDefaultState().with(SaplingBlock.STAGE, 1) : block2.getDefaultState();
+            world.setBlockState(x0y50z0, state);
             block.doTheGrow(world, genPos, state, random);
+            if (world.getBlockState(x0y50z0) == state) { //Try with jar base block
+                world.setBlockState(x0y49z0, jarBase);
+                block.doTheGrow(world, genPos, state, random);
+            }
+            if (world.getBlockState(x0y50z0) == state) { // Try as double tree
+                world.setBlockState(x0y49z0, dirt);
+                world.setBlockState(x1y49z0, dirt);
+                world.setBlockState(x0y49z1, dirt);
+                world.setBlockState(x1y49z1, dirt);
+                world.setBlockState(x1y50z0, state);
+                world.setBlockState(x0y50z1, state);
+                world.setBlockState(x1y50z1, state);
+                block.doTheGrow(world, genPos, state, random);
+            }
+            if (world.getBlockState(x0y50z0) == state) {
+                return null; // Give up
+            }
+            return collectWorldToTree(world, server);
+        } catch (Exception e) {
+            String id = Registry.BLOCK.getId(block2).toString();
+            PlantInAJar.CONFIG.autoConfigurater.blackList.add(id);
+            System.err.println("Error generating tree for block: " + id);
+            e.printStackTrace();
+            return null;
         }
-        if (world.getBlockState(x0y50z0) == state) {
-            return null; // Give up
-        }
-        return collectWorldToTree(world, server);
     }
 
     private static Tree collectWorldToTree(FakeServerWorld world, boolean server) {

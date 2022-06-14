@@ -1,19 +1,34 @@
 package io.github.coolmineman.plantinajar.fake;
 
-import net.minecraft.server.world.ServerTickScheduler;
-import net.minecraft.server.world.ServerWorld;
+import net.minecraft.block.Block;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.TickPriority;
+import net.minecraft.world.tick.OrderedTick;
+import net.minecraft.world.tick.WorldTickScheduler;
 
-public class FakeServerTickScheduler extends ServerTickScheduler {
+public class FakeServerTickScheduler extends WorldTickScheduler<Block> {
 
-    public FakeServerTickScheduler(ServerWorld world) {
-        super(world, null, null, null);
+    public FakeServerTickScheduler() {
+        super(thing -> false, null);
     }
 
     @Override
-    public void schedule(BlockPos pos, Object object, int delay, TickPriority priority) {
+    public boolean isTicking(BlockPos pos, Block type) {
+        return false;
+    }
+
+    @Override
+    public void scheduleTick(OrderedTick<Block> orderedTick) {
         // noop
+    }
+
+    @Override
+    public boolean isQueued(BlockPos pos, Block type) {
+        return false;
+    }
+
+    @Override
+    public int getTickCount() {
+        return 0;
     }
     
 }

@@ -1,29 +1,13 @@
-# gradle
-
-.gradle/
-build/
-out/
-classes/
-
-# eclipse
-
+.vscode
+build
+.brachyura
+run
+netbeans
+.idea
 *.launch
-
-# idea
-
-.idea/
 *.iml
-*.ipr
-*.iws
-
-# vscode
-
-.settings/
-.vscode/
-bin/
 .classpath
 .project
-
-# fabric
-
-run/
+.settings
+/.apt_generated/
+.factorypath

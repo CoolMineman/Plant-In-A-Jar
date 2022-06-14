@@ -1,6 +1,7 @@
 package io.github.coolmineman.plantinajar;
 
-import alexiil.mc.lib.attributes.fluid.mixin.api.IBucketItem;
+import net.fabricmc.fabric.api.transfer.v1.context.ContainerItemContext;
+import net.fabricmc.fabric.api.transfer.v1.fluid.FluidStorage;
 import net.minecraft.block.BambooBlock;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
@@ -11,7 +12,6 @@ import net.minecraft.block.CropBlock;
 import net.minecraft.block.NetherWartBlock;
 import net.minecraft.block.PlantBlock;
 import net.minecraft.block.RootsBlock;
-import net.minecraft.block.SaplingBlock;
 import net.minecraft.block.SproutsBlock;
 import net.minecraft.block.SugarCaneBlock;
 import net.minecraft.block.VineBlock;
@@ -79,7 +79,7 @@ public class GoodIdeaDetector {
         if (isGoodIdeaPlant(i)) {
             return false;
         }
-        if (i.getItem() instanceof IBucketItem) return true;
+        if (FluidStorage.ITEM.find(i, ContainerItemContext.withInitial(i)) != null) return true;
         BlockState block;
         try {
             block = ((BlockItem)i.getItem()).getBlock().getDefaultState();
