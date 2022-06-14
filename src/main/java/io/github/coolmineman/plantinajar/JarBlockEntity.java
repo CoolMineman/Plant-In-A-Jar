@@ -1,6 +1,6 @@
 package io.github.coolmineman.plantinajar;
 
-import java.util.Random;
+import net.minecraft.util.math.random.Random;
 
 import io.github.coolmineman.plantinajar.mixin.PlantBlockAccess;
 import io.github.coolmineman.plantinajar.tree.Tree;
@@ -55,7 +55,6 @@ import net.minecraft.screen.ScreenHandlerContext;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.tag.BlockTags;
 import net.minecraft.text.Text;
-import net.minecraft.text.TranslatableText;
 import net.minecraft.util.collection.DefaultedList;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
@@ -74,7 +73,7 @@ public class JarBlockEntity extends BlockEntity implements NamedScreenHandlerFac
     private final JarOutputInventory output = new JarOutputInventory(10);
     private boolean hasOutputed = false;
     private int tickyes = 0;
-    private Random random = new Random();
+    private Random random = Random.create();
     private long seed;
     public Block treeCacheKey;
     public Tree tree = null;
@@ -345,7 +344,7 @@ public class JarBlockEntity extends BlockEntity implements NamedScreenHandlerFac
 
     @Override
     public Text getDisplayName() {
-        return new TranslatableText(getCachedState().getBlock().getTranslationKey());
+        return Text.translatable(getCachedState().getBlock().getTranslationKey());
     }
 
     @Override

@@ -1,6 +1,6 @@
 package io.github.coolmineman.plantinajar.mixin;
 
-import java.util.Random;
+import net.minecraft.util.math.random.Random;
 
 import org.spongepowered.asm.mixin.Mixin;
 

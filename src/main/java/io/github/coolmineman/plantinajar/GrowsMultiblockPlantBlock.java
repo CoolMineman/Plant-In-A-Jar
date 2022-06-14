@@ -1,6 +1,6 @@
 package io.github.coolmineman.plantinajar;
 
-import java.util.Random;
+import net.minecraft.util.math.random.Random;
 
 import net.minecraft.block.BlockState;
 import net.minecraft.server.world.ServerWorld;

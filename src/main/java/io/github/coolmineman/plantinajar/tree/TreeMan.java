@@ -2,7 +2,7 @@ package io.github.coolmineman.plantinajar.tree;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Random;
+import net.minecraft.util.math.random.Random;
 
 import org.jetbrains.annotations.Nullable;
 
@@ -128,7 +128,7 @@ public class TreeMan {
         BlockColors bcs = MinecraftClient.getInstance().getBlockColors();
         QuadWithColor[][][][] treeArray = new QuadWithColor[maxx - minx + 1][maxy - miny + 1][maxz - minz + 1][0];
         ArrayList<QuadWithColor> ql = new ArrayList<>();
-        Random random = new Random(42);
+        Random random = Random.create(42);
         BlockPos.Mutable pos = new BlockPos.Mutable();
         BlockPos.Mutable cullTestPos = new BlockPos.Mutable();
         for (long l : worldMap.keySet()) {

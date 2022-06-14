@@ -124,7 +124,7 @@ public class JarBlockEntityRenderer implements BlockEntityRenderer<JarBlockEntit
             if (fs != null) {
                 try (Transaction t = Transaction.openOuter()) {
                     StorageView<FluidVariant> bsv = null;
-                    for (StorageView<FluidVariant> sv : fs.iterable(t)) {
+                    for (StorageView<FluidVariant> sv : fs) {
                         if (bsv == null || sv.getAmount() > bsv.getAmount()) bsv = sv;
                     }
                     if (bsv != null) {

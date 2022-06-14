@@ -15,7 +15,7 @@ public class Buildscript extends SimpleFabricProject {
 
     @Override
     public VersionMeta createMcVersion() {
-        return Minecraft.getVersion("1.18.2");
+        return Minecraft.getVersion("1.19");
     }
 
     @Override
@@ -25,7 +25,7 @@ public class Buildscript extends SimpleFabricProject {
 
     @Override
     public MappingTree createMappings() {
-        return Yarn.ofMaven(FabricMaven.URL, FabricMaven.yarn("1.18.2+build.3")).tree;
+        return Yarn.ofMaven(FabricMaven.URL, FabricMaven.yarn("1.19+build.2")).tree;
     }
 
     @Override
@@ -36,28 +36,28 @@ public class Buildscript extends SimpleFabricProject {
     @Override
     public void getModDependencies(ModDependencyCollector d) {
         String[][] fapiModules = new String[][] {
-            {"fabric-registry-sync-v0", "0.9.9+0d9ab37260"},
-            {"fabric-api-base", "0.4.4+d7c144a860"},
-            {"fabric-lifecycle-events-v1", "2.0.4+d8d7804a60"},
-            {"fabric-networking-api-v1", "1.0.22+e6b169eb60"},
-            {"fabric-rendering-v1", "1.10.7+54e5b2ec60"},
-            {"fabric-screen-handler-api-v1", "1.2.1+1f6558e860"},
-            {"fabric-object-builder-api-v1", "2.1.2+032c981d60"},
-            {"fabric-blockrenderlayer-v1", "1.1.12+3ac43d9560"},
-            {"fabric-transfer-api-v1", "1.6.2+f4563ac860"},
-            {"fabric-api-lookup-api-v1", "1.6.1+2373a54560"},
-            {"fabric-renderer-api-v1", "0.4.13+d882b91560"},
-            {"fabric-rendering-fluids-v1", "2.0.2+54e5b2ec60"},
-            {"fabric-renderer-indigo", "0.5.0+7faf0d8860"},
-            {"fabric-resource-loader-v0", "0.5.1+e747827960"}
+            {"fabric-registry-sync-v0", "0.9.16+92cf9a3ea9"},
+            {"fabric-api-base", "0.4.9+e62f51a3a9"},
+            {"fabric-lifecycle-events-v1", "2.1.0+33fbc738a9"},
+            {"fabric-networking-api-v1", "1.0.27+7fe97409a9"},
+            {"fabric-rendering-v1", "1.10.14+9ff28f40a9"},
+            {"fabric-screen-handler-api-v1", "1.2.6+9ff28f40a9"},
+            {"fabric-object-builder-api-v1", "4.0.5+9ff28f40a9"},
+            {"fabric-blockrenderlayer-v1", "1.1.18+9ff28f40a9"},
+            {"fabric-transfer-api-v1", "2.0.9+e62f51a3a9"},
+            {"fabric-api-lookup-api-v1", "1.6.7+9ff28f40a9"},
+            {"fabric-renderer-api-v1", "1.0.8+9ff28f40a9"},
+            {"fabric-rendering-fluids-v1", "3.0.5+9ff28f40a9"},
+            {"fabric-renderer-indigo", "0.6.6+9ff28f40a9"},
+            {"fabric-resource-loader-v0", "0.5.3+9e7660c6a9"}
         };
         for (String[] module : fapiModules) {
             d.addMaven(FabricMaven.URL, new MavenId(FabricMaven.GROUP_ID + ".fabric-api", module[0], module[1]), ModDependencyFlag.RUNTIME, ModDependencyFlag.COMPILE);
         }
         jij(d.addMaven(Maven.MAVEN_CENTRAL, new MavenId("org.objenesis:objenesis:3.2"), ModDependencyFlag.COMPILE, ModDependencyFlag.RUNTIME));
-        jij(d.addMaven(COTTONMC_MAVEN, new MavenId("io.github.cottonmc:LibGui:5.4.2+1.18.2"), ModDependencyFlag.COMPILE, ModDependencyFlag.RUNTIME));
+        jij(d.addMaven(COTTONMC_MAVEN, new MavenId("io.github.cottonmc:LibGui:6.0.0-beta.5+1.19-pre1"), ModDependencyFlag.COMPILE, ModDependencyFlag.RUNTIME));
         d.addMaven(Maven.MAVEN_CENTRAL, new MavenId("io.github.juuxel:libninepatch:1.1.0"), ModDependencyFlag.COMPILE, ModDependencyFlag.RUNTIME); // jij'd in libgui
-        d.addMaven(COTTONMC_MAVEN, new MavenId("io.github.cottonmc:Jankson-Fabric:4.0.0+j1.2.0"), ModDependencyFlag.COMPILE, ModDependencyFlag.RUNTIME); // jij'd in libgui
+        d.addMaven(COTTONMC_MAVEN, new MavenId("io.github.cottonmc:Jankson-Fabric:4.1.1+j1.2.1"), ModDependencyFlag.COMPILE, ModDependencyFlag.RUNTIME); // jij'd in libgui
         d.addMaven(Maven.MAVEN_CENTRAL, new MavenId("blue.endless:jankson:1.2.1"), ModDependencyFlag.COMPILE, ModDependencyFlag.RUNTIME); // jij'd in libgui
     }
     

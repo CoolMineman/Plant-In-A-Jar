@@ -18,16 +18,18 @@ import net.minecraft.server.world.ServerWorld;
 import net.minecraft.tag.BlockTags;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.intprovider.ConstantIntProvider;
 import net.minecraft.util.registry.RegistryEntry;
 import net.minecraft.world.WorldProperties;
 import net.minecraft.world.Heightmap.Type;
 import net.minecraft.world.biome.Biome;
 import net.minecraft.world.dimension.DimensionType;
+import net.minecraft.world.dimension.DimensionType.MonsterSettings;
 import net.minecraft.world.tick.WorldTickScheduler;
 
 public class FakeServerWorld extends ServerWorld {
     private static final ObjectInstantiator<FakeServerWorld> FACTORY = (new ObjenesisStd()).getInstantiatorOf(FakeServerWorld.class);
-    private static final DimensionType DIMENSION_TYPE = DimensionType.create(OptionalLong.empty(), true, false, false, true, 1.0D, false, false, true, false, true, 0, 256, 256, BlockTags.INFINIBURN_OVERWORLD, new Identifier("plantinajar", "fakenews"), 0.0F);
+    private static final DimensionType DIMENSION_TYPE = new DimensionType(OptionalLong.empty(), true, false, false, true, 1.0D, false, false, 0, 256, 256, BlockTags.INFINIBURN_OVERWORLD, new Identifier("plantinajar", "fakenews"), 0.0F, new MonsterSettings(false, false, ConstantIntProvider.ZERO, 0));
 
     private Long2ObjectOpenHashMap<BlockState> states;
     private ServerChunkManager chunkManager;
@@ -39,7 +41,7 @@ public class FakeServerWorld extends ServerWorld {
     private int topYInclusive;
 
     private FakeServerWorld() {
-        super(null, null, null, null, null, null, null, null, false, 0, null, false);
+        super(null, null, null, null, null, null, null, false, 0, null, false);
     }
 
     public static FakeServerWorld create(RegistryEntry<Biome> biome) {
@@ -53,8 +55,8 @@ public class FakeServerWorld extends ServerWorld {
         this.chunkManager = FakeServerChunkManager.create();
         this.states = new Long2ObjectOpenHashMap<>();
         fakeServerTickScheduler = new FakeServerTickScheduler();
-        this.height = DIMENSION_TYPE.getHeight();
-        this.bottomY = DIMENSION_TYPE.getMinimumY();
+        this.height = DIMENSION_TYPE.height();
+        this.bottomY = DIMENSION_TYPE.minY();
         this.topYInclusive = this.bottomY + this.height - 1;
     }
 
