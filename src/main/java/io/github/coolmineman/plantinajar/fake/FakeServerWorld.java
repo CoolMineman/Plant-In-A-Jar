@@ -18,6 +18,7 @@ import net.minecraft.server.world.ServerWorld;
 import net.minecraft.tag.BlockTags;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.registry.DynamicRegistryManager;
 import net.minecraft.util.registry.RegistryEntry;
 import net.minecraft.world.WorldProperties;
 import net.minecraft.world.Heightmap.Type;
@@ -33,6 +34,7 @@ public class FakeServerWorld extends ServerWorld {
     private ServerChunkManager chunkManager;
     private FakeServerTickScheduler fakeServerTickScheduler;
     private RegistryEntry<Biome> biome;
+    private DynamicRegistryManager registryManager;
 
     private int bottomY;
     private int height;
@@ -42,15 +44,16 @@ public class FakeServerWorld extends ServerWorld {
         super(null, null, null, null, null, null, null, null, false, 0, null, false);
     }
 
-    public static FakeServerWorld create(RegistryEntry<Biome> biome) {
+    public static FakeServerWorld create(RegistryEntry<Biome> biome, DynamicRegistryManager registryManager) {
         FakeServerWorld thiz = FACTORY.newInstance();
         thiz.init();
         thiz.biome = biome;
+        thiz.registryManager = registryManager;
         return thiz;
     }
 
     private void init() {
-        this.chunkManager = FakeServerChunkManager.create();
+        this.chunkManager = FakeServerChunkManager.create(this);
         this.states = new Long2ObjectOpenHashMap<>();
         fakeServerTickScheduler = new FakeServerTickScheduler();
         this.height = DIMENSION_TYPE.getHeight();
@@ -128,6 +131,11 @@ public class FakeServerWorld extends ServerWorld {
     @Override
     public RegistryEntry<Biome> getBiome(BlockPos pos) {
         return biome;
+    }
+    
+    @Override
+    public DynamicRegistryManager getRegistryManager() {
+        return registryManager;
     }
 
     // See https://github.com/CaffeineMC/lithium-fabric/blob/fd862889af1c3b39606d6047c1fb61fbd0d12aa7/src/main/java/me/jellysquid/mods/lithium/mixin/world/inline_height/WorldMixin.java

@@ -3,6 +3,8 @@ package io.github.coolmineman.plantinajar.config;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
+import com.google.gson.annotations.Expose;
+
 import net.minecraft.block.Blocks;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.registry.Registry;
@@ -12,7 +14,9 @@ public class AutoConfigurater {
     int growthTime = 30;
     ConcurrentHashMap<String, Integer> perItemGrowthTimes = new ConcurrentHashMap<>();
     ConcurrentHashMap<String, Integer> growthModifierRegexPatterns = new ConcurrentHashMap<>();
-    public Set<String> blackList = ConcurrentHashMap.newKeySet();
+    Set<String> blackList = ConcurrentHashMap.newKeySet();
+    @Expose(serialize = false, deserialize = false)
+    public Set<String> forceBlackList = ConcurrentHashMap.newKeySet();
 
     public boolean shouldDropItems() {
         return this.dropItems;
@@ -35,5 +39,9 @@ public class AutoConfigurater {
 
     public void postLoad() {
         RegexComputation.init(growthModifierRegexPatterns);
+    }
+
+    public boolean isBlacklisted(String blockId) {
+        return blackList.contains(blockId) || forceBlackList.contains(blockId);
     }
 }

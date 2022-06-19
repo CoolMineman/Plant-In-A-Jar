@@ -121,7 +121,7 @@ public class JarBlockEntity extends BlockEntity implements NamedScreenHandlerFac
             BlockState rawPlant = getRawPlant();
             if (world.isClient && rawPlant.getBlock() instanceof GrowsMultiblockPlantBlock && treeCacheKey != rawPlant.getBlock()) {
                 random.setSeed(seed);
-                tree = TreeMan.genTree((GrowsMultiblockPlantBlock)rawPlant.getBlock(), getBase(), world.getBiome(pos), random, false);
+                tree = TreeMan.genTree(world.getRegistryManager(), (GrowsMultiblockPlantBlock)rawPlant.getBlock(), getBase(), world.getBiome(pos), random, false);
                 treeCacheKey = rawPlant.getBlock();
             }
             if (tickyes < getGrowthTime()) {
@@ -131,7 +131,7 @@ public class JarBlockEntity extends BlockEntity implements NamedScreenHandlerFac
                     if (PlantInAJar.CONFIG.autoConfigurater.shouldDropItems()) {
                         if (rawPlant.getBlock() instanceof GrowsMultiblockPlantBlock) {
                             random.setSeed(seed);
-                            Tree serverTree = TreeMan.genTree((GrowsMultiblockPlantBlock)rawPlant.getBlock(), getBase(), world.getBiome(pos), random, true);
+                            Tree serverTree = TreeMan.genTree(world.getRegistryManager(), (GrowsMultiblockPlantBlock)rawPlant.getBlock(), getBase(), world.getBiome(pos), random, true);
                             if (serverTree != null) {
                                 for (BlockState state : serverTree.drops) {
                                     if (state.getBlock() instanceof LeavesBlock || state.getBlock() instanceof MushroomBlock) {
@@ -208,7 +208,7 @@ public class JarBlockEntity extends BlockEntity implements NamedScreenHandlerFac
         BlockState plant = getRawPlant();
         BlockState base = getBase();
 
-        if (PlantInAJar.CONFIG.autoConfigurater.blackList.contains(Registry.BLOCK.getId(plant.getBlock()).toString())) return false;
+        if (PlantInAJar.CONFIG.autoConfigurater.isBlacklisted(Registry.BLOCK.getId(plant.getBlock()).toString())) return false;
         if (getPlant().isIn(BlockTags.FLOWERS)) {
             return !getBase().isAir() && !getBase().isOf(Blocks.JUNGLE_LOG) && FluidStorage.ITEM.find(getBaseItemStack(), ContainerItemContext.withInitial(getBaseItemStack())) == null;
         }
