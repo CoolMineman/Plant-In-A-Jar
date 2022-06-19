@@ -25,6 +25,7 @@ import net.minecraft.client.render.model.BakedQuad;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.MathHelper;
+import net.minecraft.util.registry.DynamicRegistryManager;
 import net.minecraft.util.registry.Registry;
 import net.minecraft.util.registry.RegistryEntry;
 import net.minecraft.world.biome.Biome;
@@ -44,11 +45,11 @@ public class TreeMan {
     private static final long x1y50z1 = BlockPos.asLong(1, 50, 1);
     private static final Direction[] DIRECTIONS = {Direction.DOWN, Direction.UP, Direction.NORTH, Direction.SOUTH, Direction.EAST, Direction.WEST, null};
 
-    public static @Nullable Tree genTree(GrowsMultiblockPlantBlock block, BlockState jarBase, RegistryEntry<Biome> biome, Random random, boolean server) {
+    public static @Nullable Tree genTree(DynamicRegistryManager rm, GrowsMultiblockPlantBlock block, BlockState jarBase, RegistryEntry<Biome> biome, Random random, boolean server) {
         Block block2 = ((Block)block);
         try {
             // ChorusFlowerBlock
-            FakeServerWorld world = FakeServerWorld.create(biome);
+            FakeServerWorld world = FakeServerWorld.create(biome, rm);
             world.setBlockState(x0y49z0, dirt);
             BlockState state = block2.getDefaultState().contains(SaplingBlock.STAGE) ? block2.getDefaultState().with(SaplingBlock.STAGE, 1) : block2.getDefaultState();
             world.setBlockState(x0y50z0, state);
@@ -73,7 +74,7 @@ public class TreeMan {
             return collectWorldToTree(world, server);
         } catch (Exception e) {
             String id = Registry.BLOCK.getId(block2).toString();
-            PlantInAJar.CONFIG.autoConfigurater.blackList.add(id);
+            PlantInAJar.CONFIG.autoConfigurater.forceBlackList.add(id);
             System.err.println("Error generating tree for block: " + id);
             e.printStackTrace();
             return null;
