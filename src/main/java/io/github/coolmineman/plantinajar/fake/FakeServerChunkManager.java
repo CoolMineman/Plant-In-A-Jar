@@ -4,6 +4,7 @@ import org.objenesis.ObjenesisStd;
 import org.objenesis.instantiator.ObjectInstantiator;
 
 import net.minecraft.server.world.ServerChunkManager;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.gen.chunk.ChunkGenerator;
 
 public class FakeServerChunkManager extends ServerChunkManager {
@@ -24,5 +25,10 @@ public class FakeServerChunkManager extends ServerChunkManager {
     @Override
     public ChunkGenerator getChunkGenerator() {
         return chunkGenerator;
+    }
+
+    @Override
+    public void markForUpdate(BlockPos pos) {
+        // noop
     }
 }

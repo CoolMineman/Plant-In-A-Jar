@@ -140,6 +140,11 @@ public class FakeServerWorld extends ServerWorld {
         return registryManager;
     }
 
+    @Override
+    public void updateListeners(BlockPos pos, BlockState oldState, BlockState newState, int flags) {
+        //noop
+    }
+
     // See https://github.com/CaffeineMC/lithium-fabric/blob/fd862889af1c3b39606d6047c1fb61fbd0d12aa7/src/main/java/me/jellysquid/mods/lithium/mixin/world/inline_height/WorldMixin.java
     // Needed for lithium compat
 

@@ -50,7 +50,7 @@ public class TreeMan {
         try {
             // ChorusFlowerBlock
             FakeServerWorld world = FakeServerWorld.create(biome, rm);
-            world.setBlockState(x0y49z0, dirt);
+            world.setBlockState(x0y49z0, jarBase);
             BlockState state = block2.getDefaultState().contains(SaplingBlock.STAGE) ? block2.getDefaultState().with(SaplingBlock.STAGE, 1) : block2.getDefaultState();
             world.setBlockState(x0y50z0, state);
             block.doTheGrow(world, genPos, state, random);
@@ -59,16 +59,44 @@ public class TreeMan {
                 block.doTheGrow(world, genPos, state, random);
             }
             if (world.getBlockState(x0y50z0) == state) { // Try as double tree
-                world.setBlockState(x0y49z0, dirt);
-                world.setBlockState(x1y49z0, dirt);
-                world.setBlockState(x0y49z1, dirt);
-                world.setBlockState(x1y49z1, dirt);
+                world.setBlockState(x0y49z0, jarBase);
+                world.setBlockState(x1y49z0, jarBase);
+                world.setBlockState(x0y49z1, jarBase);
+                world.setBlockState(x1y49z1, jarBase);
                 world.setBlockState(x1y50z0, state);
                 world.setBlockState(x0y50z1, state);
                 world.setBlockState(x1y50z1, state);
                 block.doTheGrow(world, genPos, state, random);
             }
-            if (world.getBlockState(x0y50z0) == state) {
+            if (world.getBlockState(x0y50z0) == state) { // Yeet
+                for (int x = -3; x <= 3; x++) {
+                    for (int z = -3; z <= 3; z++) {
+                        world.setBlockState(BlockPos.asLong(x, 50, z), state);
+                    }
+                }
+                for (int x = -5; x <= 5; x++) {
+                    for (int z = -5; z <= 5; z++) {
+                        world.setBlockState(BlockPos.asLong(x, 49, z), jarBase);
+                    }
+                }
+                block.doTheGrow(world, genPos, state, random);
+                BlockState air = Blocks.AIR.getDefaultState();
+                for (int x = -3; x <= 3; x++) {
+                    for (int z = -3; z <= 3; z++) {
+                        if (world.getBlockState(BlockPos.asLong(x, 50, z)) == state) {
+                            world.setBlockState(BlockPos.asLong(x, 50, z), air);
+                        }
+                    }
+                }
+                for (int x = -5; x <= 5; x++) {
+                    for (int z = -5; z <= 5; z++) {
+                        if (world.getBlockState(BlockPos.asLong(x, 49, z)) == jarBase) {
+                            world.setBlockState(BlockPos.asLong(x, 49, z), air);
+                        }
+                    }
+                }
+            }
+            if (world.getBackingMap().isEmpty()) {
                 return null; // Give up
             }
             return collectWorldToTree(world, server);
