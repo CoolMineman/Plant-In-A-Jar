@@ -23,7 +23,7 @@ public class FakeChunkGenerator extends ChunkGenerator {
     final FakeServerWorld world;
 
     public FakeChunkGenerator(FakeServerWorld world) {
-        super(null, null, null);
+        super(null, null);
         this.world = world;
     }
 

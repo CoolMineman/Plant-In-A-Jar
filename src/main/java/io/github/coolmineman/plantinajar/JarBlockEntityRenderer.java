@@ -39,7 +39,7 @@ import net.minecraft.client.render.model.BakedModel;
 import net.minecraft.client.texture.Sprite;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.fluid.Fluids;
-import net.minecraft.tag.BlockTags;
+import net.minecraft.registry.tag.BlockTags;
 import net.minecraft.util.math.Direction;
 public class JarBlockEntityRenderer implements BlockEntityRenderer<JarBlockEntity> {
     public static float getScaleFactor(JarBlockEntity e) {

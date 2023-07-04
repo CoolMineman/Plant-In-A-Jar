@@ -1,5 +1,6 @@
 package io.github.coolmineman.plantinajar;
 
+import io.github.coolmineman.plantinajar.fake.FakeServerWorld;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.blockrenderlayer.v1.BlockRenderLayerMap;
 import net.fabricmc.fabric.api.client.rendering.v1.BlockEntityRendererRegistry;
@@ -13,6 +14,7 @@ public class PlantInAJarClient implements ClientModInitializer {
         BlockRenderLayerMap.INSTANCE.putBlocks(RenderLayer.getCutoutMipped(), PlantInAJar.PLANT_JAR);
         BlockEntityRendererRegistry.register(PlantInAJar.PLANT_JAR_ENTITY, c -> new JarBlockEntityRenderer());
         ScreenRegistry.<JarGuiDescription, JarBlockScreen>register(PlantInAJar.EPIC_SCREEN_HAND_YES, new StupidFactoryThing());
+        FakeServerWorld.clientRegAhh();
     }
 
 }

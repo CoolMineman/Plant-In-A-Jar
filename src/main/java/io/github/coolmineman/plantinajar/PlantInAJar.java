@@ -10,11 +10,11 @@ import net.minecraft.block.Blocks;
 import net.minecraft.block.entity.BlockEntityType;
 import net.minecraft.item.BlockItem;
 import net.minecraft.item.Item;
-import net.minecraft.item.ItemGroup;
+import net.minecraft.registry.Registries;
+import net.minecraft.registry.Registry;
 import net.minecraft.screen.ScreenHandlerContext;
 import net.minecraft.screen.ScreenHandlerType;
 import net.minecraft.util.Identifier;
-import net.minecraft.util.registry.Registry;
 
 public class PlantInAJar implements ModInitializer {
 
@@ -30,9 +30,9 @@ public class PlantInAJar implements ModInitializer {
 		// This code runs as soon as Minecraft is in a mod-load-ready state.
 		// However, some things (like resources) may still be uninitialized.
 		// Proceed with mild caution.
-		Registry.register(Registry.BLOCK, new Identifier("plantinajar", "plant_jar"), PLANT_JAR);
-		Registry.register(Registry.ITEM, new Identifier("plantinajar", "plant_jar"), new BlockItem(PLANT_JAR, new Item.Settings().group(ItemGroup.MISC)));
-		PLANT_JAR_ENTITY = Registry.register(Registry.BLOCK_ENTITY_TYPE, "plantinajar:plant_jar", FabricBlockEntityTypeBuilder.create(JarBlockEntity::new, PLANT_JAR).build(null));
+		Registry.register(Registries.BLOCK, new Identifier("plantinajar", "plant_jar"), PLANT_JAR);
+		Registry.register(Registries.ITEM, new Identifier("plantinajar", "plant_jar"), new BlockItem(PLANT_JAR, new Item.Settings()));
+		PLANT_JAR_ENTITY = Registry.register(Registries.BLOCK_ENTITY_TYPE, "plantinajar:plant_jar", FabricBlockEntityTypeBuilder.create(JarBlockEntity::new, PLANT_JAR).build(null));
 		EPIC_SCREEN_HAND_YES = ScreenHandlerRegistry.registerSimple(new Identifier("plantinajar", "plant_jar"), (syncId, inventory) -> new JarGuiDescription(syncId, inventory, ScreenHandlerContext.EMPTY));
 		System.out.println("You Can Put Your Plants In Jars Now!");
 		

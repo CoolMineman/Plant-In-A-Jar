@@ -43,30 +43,30 @@ import net.minecraft.inventory.SidedInventory;
 import net.minecraft.item.BlockItem;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
-import net.minecraft.loot.context.LootContext;
+import net.minecraft.loot.context.LootContextParameterSet;
 import net.minecraft.loot.context.LootContextParameters;
 import net.minecraft.nbt.NbtCompound;
-import net.minecraft.network.Packet;
 import net.minecraft.network.listener.ClientPlayPacketListener;
+import net.minecraft.network.packet.Packet;
 import net.minecraft.network.packet.s2c.play.BlockEntityUpdateS2CPacket;
+import net.minecraft.registry.Registries;
+import net.minecraft.registry.tag.BlockTags;
 import net.minecraft.screen.NamedScreenHandlerFactory;
 import net.minecraft.screen.ScreenHandler;
 import net.minecraft.screen.ScreenHandlerContext;
 import net.minecraft.server.world.ServerWorld;
-import net.minecraft.tag.BlockTags;
 import net.minecraft.text.Text;
 import net.minecraft.util.collection.DefaultedList;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.Vec3d;
-import net.minecraft.util.registry.Registry;
 import net.minecraft.world.WorldAccess;
 
 public class JarBlockEntity extends BlockEntity implements NamedScreenHandlerFactory, InventoryProvider {
     private Integer clientGrowthTime = null;
     public int getGrowthTime() {
         if (clientGrowthTime != null) return clientGrowthTime;
-        return PlantInAJar.CONFIG.autoConfigurater.getGrowthTime(Registry.BLOCK.getId(getRawPlant().getBlock())) * 20;
+        return PlantInAJar.CONFIG.autoConfigurater.getGrowthTime(Registries.BLOCK.getId(getRawPlant().getBlock())) * 20;
     }
 
     private final JarInventory inventory = new JarInventory();
@@ -120,7 +120,7 @@ public class JarBlockEntity extends BlockEntity implements NamedScreenHandlerFac
             BlockState rawPlant = getRawPlant();
             if (world.isClient && rawPlant.getBlock() instanceof GrowsMultiblockPlantBlock && treeCacheKey != rawPlant.getBlock()) {
                 random.setSeed(seed);
-                tree = TreeMan.genTree(world.getRegistryManager(), (GrowsMultiblockPlantBlock)rawPlant.getBlock(), getBase(), world.getBiome(pos), random, false);
+                tree = TreeMan.genTree(world, (GrowsMultiblockPlantBlock)rawPlant.getBlock(), getBase(), world.getBiome(pos), random, false);
                 treeCacheKey = rawPlant.getBlock();
             }
             if (tickyes < getGrowthTime()) {
@@ -130,24 +130,24 @@ public class JarBlockEntity extends BlockEntity implements NamedScreenHandlerFac
                     if (PlantInAJar.CONFIG.autoConfigurater.shouldDropItems()) {
                         if (rawPlant.getBlock() instanceof GrowsMultiblockPlantBlock) {
                             random.setSeed(seed);
-                            Tree serverTree = TreeMan.genTree(world.getRegistryManager(), (GrowsMultiblockPlantBlock)rawPlant.getBlock(), getBase(), world.getBiome(pos), random, true);
+                            Tree serverTree = TreeMan.genTree(world, (GrowsMultiblockPlantBlock)rawPlant.getBlock(), getBase(), world.getBiome(pos), random, true);
                             if (serverTree != null) {
                                 for (BlockState state : serverTree.drops) {
                                     if (state.getBlock() instanceof LeavesBlock || state.getBlock() instanceof MushroomBlock) {
                                         for (int i = 0; i < 5; i++) {
-                                            for (ItemStack stack : state.getDroppedStacks((new LootContext.Builder((ServerWorld)getWorld())).random(world.random).parameter(LootContextParameters.ORIGIN, Vec3d.ofCenter(pos)).parameter(LootContextParameters.TOOL, ItemStack.EMPTY))) {
+                                            for (ItemStack stack : state.getDroppedStacks((new LootContextParameterSet.Builder((ServerWorld)getWorld())).add(LootContextParameters.ORIGIN, Vec3d.ofCenter(pos)).add(LootContextParameters.TOOL, ItemStack.EMPTY))) {
                                                 output.addStack(stack);
                                             }
                                         }
                                     } else {
-                                        for (ItemStack stack : state.getDroppedStacks((new LootContext.Builder((ServerWorld)getWorld())).random(world.random).parameter(LootContextParameters.ORIGIN, Vec3d.ofCenter(pos)).parameter(LootContextParameters.TOOL, ItemStack.EMPTY))) {
+                                        for (ItemStack stack : state.getDroppedStacks((new LootContextParameterSet.Builder((ServerWorld)getWorld())).add(LootContextParameters.ORIGIN, Vec3d.ofCenter(pos)).add(LootContextParameters.TOOL, ItemStack.EMPTY))) {
                                             output.addStack(stack);
                                         }
                                     }
                                 }
                             }
                         } else if (getPlant().isOf(Blocks.CHORUS_FLOWER)) {
-                            for (ItemStack stack : Blocks.CHORUS_PLANT.getDefaultState().getDroppedStacks((new LootContext.Builder((ServerWorld)getWorld())).random(world.random).parameter(LootContextParameters.ORIGIN, Vec3d.ofCenter(pos)).parameter(LootContextParameters.TOOL, ItemStack.EMPTY))) {
+                            for (ItemStack stack : Blocks.CHORUS_PLANT.getDefaultState().getDroppedStacks((new LootContextParameterSet.Builder((ServerWorld)getWorld())).add(LootContextParameters.ORIGIN, Vec3d.ofCenter(pos)).add(LootContextParameters.TOOL, ItemStack.EMPTY))) {
                                 output.addStack(stack);
                             }
                         } else if (getPlant().isOf(Blocks.SEAGRASS)) {
@@ -159,12 +159,12 @@ public class JarBlockEntity extends BlockEntity implements NamedScreenHandlerFac
                         } else if (getPlant().getBlock() instanceof CoralParentBlock || getPlant().getBlock() instanceof CoralBlockBlock) {
                             output.addStack(getPlant().getBlock().getPickStack(world, pos, getPlant()));
                         } else {
-                            for (ItemStack stack : getPlant().getDroppedStacks((new LootContext.Builder((ServerWorld)getWorld())).random(world.random).parameter(LootContextParameters.ORIGIN, Vec3d.ofCenter(pos)).parameter(LootContextParameters.TOOL, ItemStack.EMPTY))) {
+                            for (ItemStack stack : getPlant().getDroppedStacks((new LootContextParameterSet.Builder((ServerWorld)getWorld())).add(LootContextParameters.ORIGIN, Vec3d.ofCenter(pos)).add(LootContextParameters.TOOL, ItemStack.EMPTY))) {
                                 output.addStack(stack);
                             }
                         }
                         if ((getPlant().isOf(Blocks.CRIMSON_FUNGUS) || getPlant().isOf(Blocks.WARPED_FUNGUS)) && ThreadLocalRandom.current().nextInt(0, 99) < 20) {
-                            output.addStack(Blocks.SHROOMLIGHT.getDefaultState().getDroppedStacks((new LootContext.Builder((ServerWorld)getWorld())).random(world.random).parameter(LootContextParameters.ORIGIN, Vec3d.ofCenter(pos)).parameter(LootContextParameters.TOOL, ItemStack.EMPTY)).get(0));
+                            output.addStack(Blocks.SHROOMLIGHT.getDefaultState().getDroppedStacks((new LootContextParameterSet.Builder((ServerWorld)getWorld())).add(LootContextParameters.ORIGIN, Vec3d.ofCenter(pos)).add(LootContextParameters.TOOL, ItemStack.EMPTY)).get(0));
                         }
                     }
                     hasOutputed = true;
@@ -207,9 +207,9 @@ public class JarBlockEntity extends BlockEntity implements NamedScreenHandlerFac
         BlockState plant = getRawPlant();
         BlockState base = getBase();
 
-        if (PlantInAJar.CONFIG.autoConfigurater.isBlacklisted(Registry.BLOCK.getId(plant.getBlock()).toString())) return false;
+        if (PlantInAJar.CONFIG.autoConfigurater.isBlacklisted(Registries.BLOCK.getId(plant.getBlock()).toString())) return false;
         if (getPlant().isIn(BlockTags.FLOWERS)) {
-            return !getBase().isAir() && !getBase().isOf(Blocks.JUNGLE_LOG) && FluidStorage.ITEM.find(getBaseItemStack(), ContainerItemContext.withInitial(getBaseItemStack())) == null;
+            return !getBase().isAir() && !getBase().isOf(Blocks.JUNGLE_LOG) && FluidStorage.ITEM.find(getBaseItemStack(), ContainerItemContext.withConstant(getBaseItemStack())) == null;
         }
         if (getPlant().getBlock() instanceof GourdBlock) {
             return getBase().isOf(Blocks.FARMLAND);
@@ -224,7 +224,7 @@ public class JarBlockEntity extends BlockEntity implements NamedScreenHandlerFac
             return getBase().isOf(Blocks.WATER);
         }
         if (getPlant().isOf(Blocks.LILY_PAD)) {
-            Storage<FluidVariant> fs = FluidStorage.ITEM.find(getBaseItemStack(), ContainerItemContext.withInitial(getBaseItemStack()));
+            Storage<FluidVariant> fs = FluidStorage.ITEM.find(getBaseItemStack(), ContainerItemContext.withConstant(getBaseItemStack()));
             if (fs == null) return false;
             long water = fs.simulateExtract(FluidVariant.of(Fluids.WATER), Long.MAX_VALUE, null);
             return 64800 /* .8 */ > water && water > 16200 /* .2 */;
@@ -237,7 +237,7 @@ public class JarBlockEntity extends BlockEntity implements NamedScreenHandlerFac
                 e.printStackTrace();
             }
         } else if (getPlant().getBlock() instanceof VineBlock || getPlant().isOf(Blocks.WEEPING_VINES_PLANT) || getPlant().isOf(Blocks.TWISTING_VINES_PLANT)) {
-            return !getBase().isAir() && FluidStorage.ITEM.find(getBaseItemStack(), ContainerItemContext.withInitial(getBaseItemStack())) == null;
+            return !getBase().isAir() && FluidStorage.ITEM.find(getBaseItemStack(), ContainerItemContext.withConstant(getBaseItemStack())) == null;
         } else if (
             getPlant().getBlock() instanceof GrowsMultiblockPlantBlock ||
             getPlant().getBlock() instanceof CactusBlock || 
@@ -248,7 +248,7 @@ public class JarBlockEntity extends BlockEntity implements NamedScreenHandlerFac
             getPlant().getBlock() instanceof SproutsBlock ||
             getPlant().getBlock() instanceof RootsBlock
         ) {
-            return !getBase().isAir() && !getBase().isOf(Blocks.JUNGLE_LOG) && FluidStorage.ITEM.find(getBaseItemStack(), ContainerItemContext.withInitial(getBaseItemStack())) == null;
+            return !getBase().isAir() && !getBase().isOf(Blocks.JUNGLE_LOG) && FluidStorage.ITEM.find(getBaseItemStack(), ContainerItemContext.withConstant(getBaseItemStack())) == null;
         }
 
         return false;

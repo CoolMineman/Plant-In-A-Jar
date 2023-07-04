@@ -13,8 +13,8 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.inventory.SidedInventory;
 import net.minecraft.inventory.SimpleInventory;
 import net.minecraft.item.ItemStack;
+import net.minecraft.loot.context.LootContextParameterSet.Builder;
 import net.minecraft.loot.context.LootContextParameters;
-import net.minecraft.loot.context.LootContext.Builder;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
 import net.minecraft.util.hit.BlockHitResult;
@@ -62,7 +62,7 @@ public class JarBlock extends BlockWithEntity implements InventoryProvider {
     @Override
     public List<ItemStack> getDroppedStacks(BlockState state, Builder builder) {
         List<ItemStack> tmp = super.getDroppedStacks(state, builder);
-        BlockEntity e = builder.getNullable(LootContextParameters.BLOCK_ENTITY);
+        BlockEntity e = builder.getOptional(LootContextParameters.BLOCK_ENTITY);
         if (e instanceof JarBlockEntity) {
             for (ItemStack a : ((SimpleInventory)((JarBlockEntity)e).getInventory(null, null, null)).clearToList()) {
                tmp.add(a);

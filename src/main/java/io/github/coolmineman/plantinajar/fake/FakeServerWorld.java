@@ -1,31 +1,61 @@
 package io.github.coolmineman.plantinajar.fake;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.OptionalLong;
+import java.util.concurrent.ExecutionException;
 import java.util.function.Predicate;
 
 import org.objenesis.ObjenesisStd;
 import org.objenesis.instantiator.ObjectInstantiator;
 
+import com.mojang.serialization.Lifecycle;
+
 import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
+import net.fabricmc.api.EnvType;
+import net.fabricmc.api.Environment;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
+import net.minecraft.client.MinecraftClient;
 import net.minecraft.fluid.FluidState;
 import net.minecraft.fluid.Fluids;
+import net.minecraft.registry.DynamicRegistryManager;
+import net.minecraft.registry.Registry;
+import net.minecraft.registry.RegistryKeys;
+import net.minecraft.registry.SimpleRegistry;
+import net.minecraft.registry.entry.RegistryEntry;
+import net.minecraft.registry.tag.BlockTags;
+import net.minecraft.resource.DataConfiguration;
+import net.minecraft.resource.DataPackSettings;
+import net.minecraft.resource.featuretoggle.FeatureFlags;
+import net.minecraft.server.SaveLoader;
+import net.minecraft.server.SaveLoading;
+import net.minecraft.server.SaveLoading.DataPacks;
+import net.minecraft.server.command.CommandManager;
 import net.minecraft.server.world.ServerChunkManager;
 import net.minecraft.server.world.ServerWorld;
-import net.minecraft.tag.BlockTags;
+import net.minecraft.test.TestServer;
 import net.minecraft.util.Identifier;
+import net.minecraft.util.Util;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.intprovider.ConstantIntProvider;
-import net.minecraft.util.registry.DynamicRegistryManager;
-import net.minecraft.util.registry.RegistryEntry;
-import net.minecraft.world.WorldProperties;
 import net.minecraft.world.Heightmap.Type;
+import net.minecraft.world.Difficulty;
+import net.minecraft.world.GameMode;
+import net.minecraft.world.GameRules;
+import net.minecraft.world.World;
+import net.minecraft.world.WorldProperties;
 import net.minecraft.world.biome.Biome;
+import net.minecraft.world.dimension.DimensionOptions;
+import net.minecraft.world.dimension.DimensionOptionsRegistryHolder;
 import net.minecraft.world.dimension.DimensionType;
 import net.minecraft.world.dimension.DimensionType.MonsterSettings;
+import net.minecraft.world.gen.GeneratorOptions;
+import net.minecraft.world.gen.WorldPresets;
+import net.minecraft.world.level.LevelInfo;
+import net.minecraft.world.level.LevelProperties;
 import net.minecraft.world.tick.WorldTickScheduler;
 
 public class FakeServerWorld extends ServerWorld {
@@ -42,16 +72,49 @@ public class FakeServerWorld extends ServerWorld {
     private int height;
     private int topYInclusive;
 
+    private static DynamicRegistryManager clientDynamicRegistryManager;
+
     private FakeServerWorld() {
-        super(null, null, null, null, null, null, null, false, 0, null, false);
+        super(null, null, null, null, null, null, null, false, 0, null, false, null);
     }
 
-    public static FakeServerWorld create(RegistryEntry<Biome> biome, DynamicRegistryManager registryManager) {
+    public static FakeServerWorld create(RegistryEntry<Biome> biome, World world) {
         FakeServerWorld thiz = FACTORY.newInstance();
         thiz.init();
         thiz.biome = biome;
-        thiz.registryManager = registryManager;
+        if (world.isClient) {
+            thiz.registryManager = clientDynamicRegistryManager;
+        } else {
+            thiz.registryManager = world.getRegistryManager();
+        }
         return thiz;
+    }
+
+    @Environment(EnvType.CLIENT)
+    public static void clientRegAhh() { // 1.20 was a mistake
+        var rpm = MinecraftClient.getInstance().getResourcePackManager();
+        rpm.scanPacks();
+        DataConfiguration dc = new DataConfiguration(new DataPackSettings(new ArrayList<String>(rpm.getNames()), List.of()), FeatureFlags.FEATURE_MANAGER.getFeatureSet());
+        LevelInfo li = new LevelInfo("Test Level", GameMode.CREATIVE, false, Difficulty.NORMAL, true, new GameRules(), dc);
+        SaveLoader lv5;
+        try {
+            lv5 = Util.waitAndApply(
+                executor -> SaveLoading.load(
+                    new SaveLoading.ServerConfig(new DataPacks(rpm, dc, false, true), CommandManager.RegistrationEnvironment.DEDICATED, 4),
+                    arg2 -> {
+                        Registry<DimensionOptions> lv = new SimpleRegistry<DimensionOptions>(RegistryKeys.DIMENSION, Lifecycle.stable()).freeze();
+                        DimensionOptionsRegistryHolder.DimensionsConfig lv2 = arg2.worldGenRegistryManager().get(RegistryKeys.WORLD_PRESET).entryOf(WorldPresets.FLAT).value().createDimensionsRegistryHolder().toConfig(lv);
+                        return new SaveLoading.LoadContext<LevelProperties>(new LevelProperties(li, new GeneratorOptions(0L, false, false), lv2.specialWorldProperty(), lv2.getLifecycle()), lv2.toDynamicRegistryManager());
+                    },
+                    SaveLoader::new,
+                    Util.getMainWorkerExecutor(),
+                    executor
+                )
+            ).get();
+        } catch (InterruptedException | ExecutionException e) {
+            throw new RuntimeException(e);
+        }
+        clientDynamicRegistryManager = lv5.combinedDynamicRegistries().getCombinedRegistryManager();
     }
 
     private void init() {
@@ -134,7 +197,7 @@ public class FakeServerWorld extends ServerWorld {
     public RegistryEntry<Biome> getBiome(BlockPos pos) {
         return biome;
     }
-    
+
     @Override
     public DynamicRegistryManager getRegistryManager() {
         return registryManager;

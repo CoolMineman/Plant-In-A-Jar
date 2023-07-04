@@ -18,7 +18,7 @@ import net.minecraft.block.VineBlock;
 import net.minecraft.item.BlockItem;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
-import net.minecraft.tag.BlockTags;
+import net.minecraft.registry.tag.BlockTags;
 import net.minecraft.util.math.Direction;
 
 public class GoodIdeaDetector {
@@ -79,7 +79,7 @@ public class GoodIdeaDetector {
         if (isGoodIdeaPlant(i)) {
             return false;
         }
-        if (FluidStorage.ITEM.find(i, ContainerItemContext.withInitial(i)) != null) return true;
+        if (FluidStorage.ITEM.find(i, ContainerItemContext.withConstant(i)) != null) return true;
         BlockState block;
         try {
             block = ((BlockItem)i.getItem()).getBlock().getDefaultState();

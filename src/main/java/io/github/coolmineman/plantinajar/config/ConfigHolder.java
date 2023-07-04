@@ -20,6 +20,7 @@ public class ConfigHolder {
     private static final ReentrantLock LOCK = new ReentrantLock();
 
     public static final ConfigHolder INSTANCE = new ConfigHolder();
+    private static volatile int tcnt = 0;
 
     private ConfigHolder() {
         try {
@@ -44,17 +45,21 @@ public class ConfigHolder {
     }
 
     public void save() {
-        new Thread(() -> {
-            LOCK.lock();
-            try {
-                rawsave();
-            } catch (IOException e) {
-                throw new UncheckedIOException(e);
-            } finally {
-                LOCK.unlock();
-            }
-        })
-        .start();
+        if (tcnt < 2) {
+            new Thread(() -> {
+                tcnt += 1;
+                LOCK.lock();
+                try {
+                    rawsave();
+                } catch (IOException e) {
+                    throw new UncheckedIOException(e);
+                } finally {
+                    tcnt -= 1;
+                    LOCK.unlock();
+                }
+            })
+            .start();
+        }
     }
 
     public void rawsave() throws IOException {

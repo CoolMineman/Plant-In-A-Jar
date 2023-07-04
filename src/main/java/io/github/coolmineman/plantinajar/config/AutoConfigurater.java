@@ -6,8 +6,8 @@ import java.util.concurrent.ConcurrentHashMap;
 import com.google.gson.annotations.Expose;
 
 import net.minecraft.block.Blocks;
+import net.minecraft.registry.Registries;
 import net.minecraft.util.Identifier;
-import net.minecraft.util.registry.Registry;
 
 public class AutoConfigurater {
     boolean dropItems = true;
@@ -15,15 +15,14 @@ public class AutoConfigurater {
     ConcurrentHashMap<String, Integer> perItemGrowthTimes = new ConcurrentHashMap<>();
     ConcurrentHashMap<String, Integer> growthModifierRegexPatterns = new ConcurrentHashMap<>();
     Set<String> blackList = ConcurrentHashMap.newKeySet();
-    @Expose(serialize = false, deserialize = false)
-    public Set<String> forceBlackList = ConcurrentHashMap.newKeySet();
+    public transient Set<String> forceBlackList = ConcurrentHashMap.newKeySet();
 
     public boolean shouldDropItems() {
         return this.dropItems;
     }
 
     public int getGrowthTime(Identifier i) {
-        if (i.equals(Registry.BLOCK.getId(Blocks.AIR))) return growthTime;
+        if (i.equals(Registries.BLOCK.getId(Blocks.AIR))) return growthTime;
         boolean needsResave = false;
         if (perItemGrowthTimes.get(i.toString()) == null) {
             needsResave = true;
@@ -42,6 +41,6 @@ public class AutoConfigurater {
     }
 
     public boolean isBlacklisted(String blockId) {
-        return blackList.contains(blockId) || forceBlackList.contains(blockId);
+        return (blackList.contains(blockId) || forceBlackList.contains(blockId)) && !blockId.equals("minecraft:cherry_sapling");
     }
 }
