@@ -62,7 +62,7 @@ public class FakeServerWorld extends ServerWorld {
     private static final ObjectInstantiator<FakeServerWorld> FACTORY = (new ObjenesisStd()).getInstantiatorOf(FakeServerWorld.class);
     private static final DimensionType DIMENSION_TYPE = new DimensionType(OptionalLong.empty(), true, false, false, true, 1.0D, false, false, 0, 256, 256, BlockTags.INFINIBURN_OVERWORLD, new Identifier("plantinajar", "fakenews"), 0.0F, new MonsterSettings(false, false, ConstantIntProvider.ZERO, 0));
 
-    private Long2ObjectOpenHashMap<BlockState> states;
+    private Long2ObjectMap<BlockState> states;
     private ServerChunkManager chunkManager;
     private FakeServerTickScheduler fakeServerTickScheduler;
     private RegistryEntry<Biome> biome;
@@ -72,8 +72,6 @@ public class FakeServerWorld extends ServerWorld {
     private int height;
     private int topYInclusive;
 
-    private static DynamicRegistryManager clientDynamicRegistryManager;
-
     private FakeServerWorld() {
         super(null, null, null, null, null, null, null, false, 0, null, false, null);
     }
@@ -82,39 +80,8 @@ public class FakeServerWorld extends ServerWorld {
         FakeServerWorld thiz = FACTORY.newInstance();
         thiz.init();
         thiz.biome = biome;
-        if (world.isClient) {
-            thiz.registryManager = clientDynamicRegistryManager;
-        } else {
-            thiz.registryManager = world.getRegistryManager();
-        }
+        thiz.registryManager = world.getRegistryManager();
         return thiz;
-    }
-
-    @Environment(EnvType.CLIENT)
-    public static void clientRegAhh() { // 1.20 was a mistake
-        var rpm = MinecraftClient.getInstance().getResourcePackManager();
-        rpm.scanPacks();
-        DataConfiguration dc = new DataConfiguration(new DataPackSettings(new ArrayList<String>(rpm.getNames()), List.of()), FeatureFlags.FEATURE_MANAGER.getFeatureSet());
-        LevelInfo li = new LevelInfo("Test Level", GameMode.CREATIVE, false, Difficulty.NORMAL, true, new GameRules(), dc);
-        SaveLoader lv5;
-        try {
-            lv5 = Util.waitAndApply(
-                executor -> SaveLoading.load(
-                    new SaveLoading.ServerConfig(new DataPacks(rpm, dc, false, true), CommandManager.RegistrationEnvironment.DEDICATED, 4),
-                    arg2 -> {
-                        Registry<DimensionOptions> lv = new SimpleRegistry<DimensionOptions>(RegistryKeys.DIMENSION, Lifecycle.stable()).freeze();
-                        DimensionOptionsRegistryHolder.DimensionsConfig lv2 = arg2.worldGenRegistryManager().get(RegistryKeys.WORLD_PRESET).entryOf(WorldPresets.FLAT).value().createDimensionsRegistryHolder().toConfig(lv);
-                        return new SaveLoading.LoadContext<LevelProperties>(new LevelProperties(li, new GeneratorOptions(0L, false, false), lv2.specialWorldProperty(), lv2.getLifecycle()), lv2.toDynamicRegistryManager());
-                    },
-                    SaveLoader::new,
-                    Util.getMainWorkerExecutor(),
-                    executor
-                )
-            ).get();
-        } catch (InterruptedException | ExecutionException e) {
-            throw new RuntimeException(e);
-        }
-        clientDynamicRegistryManager = lv5.combinedDynamicRegistries().getCombinedRegistryManager();
     }
 
     private void init() {
@@ -133,6 +100,10 @@ public class FakeServerWorld extends ServerWorld {
 
     public Long2ObjectMap<BlockState> getBackingMap() {
         return states;
+    }
+
+    public void setBackingMap(Long2ObjectMap<BlockState> map) {
+        states = map;
     }
 
     @Override

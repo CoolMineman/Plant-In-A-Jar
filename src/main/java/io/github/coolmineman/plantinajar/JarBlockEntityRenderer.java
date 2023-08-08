@@ -47,10 +47,8 @@ public class JarBlockEntityRenderer implements BlockEntityRenderer<JarBlockEntit
     }
 
     public void renderTreeNew(GrowsMultiblockPlantBlock sapling, JarBlockEntity entity, float tickDelta, MatrixStack matrices, VertexConsumerProvider vertexConsumers, int light, int overlay) {
-        if (entity.treeCacheKey != sapling) return;
-        Tree treeWrapper = entity.tree;
-        if (treeWrapper == null) return;
-        QuadWithColor[][][][] tree = treeWrapper.quads;
+        QuadWithColor[][][][] tree = entity.treeQuads;
+        if (tree == null) return;
         if (tree.length == 0 || tree[0].length == 0 || tree[0][0].length == 0) return;
         float scale = 0.9f / Math.max(tree.length, Math.max(tree[0].length, tree[0][0].length));
         matrices.translate(0, -0.5f, 0);

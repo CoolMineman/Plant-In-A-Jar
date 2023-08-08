@@ -2,10 +2,17 @@ package io.github.coolmineman.plantinajar;
 
 import net.minecraft.util.math.random.Random;
 
+import java.util.Optional;
+
+import org.jetbrains.annotations.Nullable;
+
 import io.github.coolmineman.plantinajar.mixin.PlantBlockAccess;
+import io.github.coolmineman.plantinajar.tree.QuadWithColor;
 import io.github.coolmineman.plantinajar.tree.Tree;
 import io.github.coolmineman.plantinajar.tree.TreeMan;
 import io.netty.util.internal.ThreadLocalRandom;
+import net.fabricmc.api.EnvType;
+import net.fabricmc.api.Environment;
 import net.fabricmc.fabric.api.transfer.v1.context.ContainerItemContext;
 import net.fabricmc.fabric.api.transfer.v1.fluid.FluidStorage;
 import net.fabricmc.fabric.api.transfer.v1.fluid.FluidVariant;
@@ -75,8 +82,9 @@ public class JarBlockEntity extends BlockEntity implements NamedScreenHandlerFac
     private int tickyes = 0;
     private Random random = Random.create();
     private long seed;
-    public Block treeCacheKey;
-    public Tree tree = null;
+    private Optional<Tree> treeCache = null;
+    @Environment(EnvType.CLIENT)
+    QuadWithColor[][][][] treeQuads;
 
     public JarBlockEntity(BlockPos pos, BlockState state) {
         super(PlantInAJar.PLANT_JAR_ENTITY, pos, state);
@@ -88,7 +96,21 @@ public class JarBlockEntity extends BlockEntity implements NamedScreenHandlerFac
         seed = pos.asLong();
     }
 
+    private @Nullable Tree serverTree() {
+        BlockState rawPlant = getRawPlant();
+        if (treeCache == null) {
+            if (rawPlant.getBlock() instanceof GrowsMultiblockPlantBlock) {
+                random.setSeed(seed);
+                treeCache = Optional.ofNullable(TreeMan.genTree(world, (GrowsMultiblockPlantBlock)rawPlant.getBlock(), getBase(), world.getBiome(pos), random));
+            } else {
+                treeCache = Optional.empty();
+            }
+        }
+        return treeCache.orElse(null);
+    }
+
     private void serverReset() {
+        treeCache = null;
         tickyes = 0;
         hasOutputed = false;
         output.clear();
@@ -118,11 +140,6 @@ public class JarBlockEntity extends BlockEntity implements NamedScreenHandlerFac
     public void tick() {
         if (canGrow()) {
             BlockState rawPlant = getRawPlant();
-            if (world.isClient && rawPlant.getBlock() instanceof GrowsMultiblockPlantBlock && treeCacheKey != rawPlant.getBlock()) {
-                random.setSeed(seed);
-                tree = TreeMan.genTree(world, (GrowsMultiblockPlantBlock)rawPlant.getBlock(), getBase(), world.getBiome(pos), random, false);
-                treeCacheKey = rawPlant.getBlock();
-            }
             if (tickyes < getGrowthTime()) {
                 tickyes++;
             } else {
@@ -130,9 +147,9 @@ public class JarBlockEntity extends BlockEntity implements NamedScreenHandlerFac
                     if (PlantInAJar.CONFIG.autoConfigurater.shouldDropItems()) {
                         if (rawPlant.getBlock() instanceof GrowsMultiblockPlantBlock) {
                             random.setSeed(seed);
-                            Tree serverTree = TreeMan.genTree(world, (GrowsMultiblockPlantBlock)rawPlant.getBlock(), getBase(), world.getBiome(pos), random, true);
+                            Tree serverTree = serverTree();
                             if (serverTree != null) {
-                                for (BlockState state : serverTree.drops) {
+                                for (BlockState state : serverTree.getDrops()) {
                                     if (state.getBlock() instanceof LeavesBlock || state.getBlock() instanceof MushroomBlock) {
                                         for (int i = 0; i < 5; i++) {
                                             for (ItemStack stack : state.getDroppedStacks((new LootContextParameterSet.Builder((ServerWorld)getWorld())).add(LootContextParameters.ORIGIN, Vec3d.ofCenter(pos)).add(LootContextParameters.TOOL, ItemStack.EMPTY))) {
@@ -322,8 +339,18 @@ public class JarBlockEntity extends BlockEntity implements NamedScreenHandlerFac
         if (tag.contains("growthTime")) {
             clientGrowthTime = tag.getInt("growthTime");
         }
-        treeCacheKey = null;
-        tree = null;
+        if (world != null && world.isClient) {
+            clientTree(tag);
+        }
+    }
+
+    @Environment(EnvType.CLIENT)
+    private void clientTree(NbtCompound tag) {
+        if (tag.contains("tree")) {
+            treeQuads = Tree.read(tag.getIntArray("tree")).toQuads(world, world.getBiome(pos));
+        } else {
+            treeQuads = null;
+        }
     }
 
     @Override
@@ -357,6 +384,8 @@ public class JarBlockEntity extends BlockEntity implements NamedScreenHandlerFac
         NbtCompound r = new NbtCompound();
         writeNbt(r);
         r.putInt("growthTime", getGrowthTime());
+        Tree t = serverTree();
+        if (t != null) r.putIntArray("tree", t.write());
         return r;
     }
 
