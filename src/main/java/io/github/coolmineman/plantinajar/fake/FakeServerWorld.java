@@ -1,61 +1,35 @@
 package io.github.coolmineman.plantinajar.fake;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.OptionalLong;
-import java.util.concurrent.ExecutionException;
 import java.util.function.Predicate;
 
+import org.jetbrains.annotations.Nullable;
 import org.objenesis.ObjenesisStd;
 import org.objenesis.instantiator.ObjectInstantiator;
 
-import com.mojang.serialization.Lifecycle;
-
 import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
-import net.fabricmc.api.EnvType;
-import net.fabricmc.api.Environment;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
-import net.minecraft.client.MinecraftClient;
 import net.minecraft.fluid.FluidState;
 import net.minecraft.fluid.Fluids;
 import net.minecraft.registry.DynamicRegistryManager;
-import net.minecraft.registry.Registry;
-import net.minecraft.registry.RegistryKeys;
-import net.minecraft.registry.SimpleRegistry;
 import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.registry.tag.BlockTags;
-import net.minecraft.resource.DataConfiguration;
-import net.minecraft.resource.DataPackSettings;
-import net.minecraft.resource.featuretoggle.FeatureFlags;
-import net.minecraft.server.SaveLoader;
-import net.minecraft.server.SaveLoading;
-import net.minecraft.server.SaveLoading.DataPacks;
-import net.minecraft.server.command.CommandManager;
 import net.minecraft.server.world.ServerChunkManager;
 import net.minecraft.server.world.ServerWorld;
-import net.minecraft.test.TestServer;
 import net.minecraft.util.Identifier;
-import net.minecraft.util.Util;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.intprovider.ConstantIntProvider;
 import net.minecraft.world.Heightmap.Type;
-import net.minecraft.world.Difficulty;
-import net.minecraft.world.GameMode;
-import net.minecraft.world.GameRules;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldProperties;
 import net.minecraft.world.biome.Biome;
-import net.minecraft.world.dimension.DimensionOptions;
-import net.minecraft.world.dimension.DimensionOptionsRegistryHolder;
+import net.minecraft.world.chunk.Chunk;
+import net.minecraft.world.chunk.ChunkStatus;
 import net.minecraft.world.dimension.DimensionType;
 import net.minecraft.world.dimension.DimensionType.MonsterSettings;
-import net.minecraft.world.gen.GeneratorOptions;
-import net.minecraft.world.gen.WorldPresets;
-import net.minecraft.world.level.LevelInfo;
-import net.minecraft.world.level.LevelProperties;
 import net.minecraft.world.tick.WorldTickScheduler;
 
 public class FakeServerWorld extends ServerWorld {
@@ -237,5 +211,11 @@ public class FakeServerWorld extends ServerWorld {
     @Override
     public int getTopY() {
         return this.topYInclusive + 1;
+    }
+    
+    @Override
+    @Nullable
+    public Chunk getChunk(int chunkX, int chunkZ, ChunkStatus leastStatus, boolean create) {
+        return null;
     }
 }
